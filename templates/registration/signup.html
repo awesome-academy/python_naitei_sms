@@ -1,25 +1,31 @@
 {% extends "base_generic.html" %}
-{% load i18n %}     
+{% load i18n %}
 {% block content %}
-<div class="form_style">
+  <div class="form_style">
     <form class="form_box" method="post" novalidate>
-        {% csrf_token %}
-        <h2>{% trans "Sign Up" %}</h2>
-        {% for field in form %}
-            <p>
-                {% if field.errors %}
-                    <ul class="errorlist">
-                        {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-                    </ul>
-                {% endif %}
-                <div class = "fill_box">
-                    <p>{{ field.label_tag }} </p>
-                    {{ field }}
-                </div>
-            </p>
-        {% endfor %}
-        <div class="submit_btn"><input type="submit" value="Register" /></div>
-        <div class="login_btn"><p >{% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a></p></div>
+      {% csrf_token %}
+      <h2>{% trans "Sign Up" %}</h2>
+      {% for field in form %}
+        <p>
+          {% if field.errors %}
+            <ul class="errorlist">
+              {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+          <div class="fill_box">
+            <p>{{ field.label_tag }}</p>
+            {{ field }}
+          </div>
+        </p>
+      {% endfor %}
+      <div class="submit_btn">
+        <input type="submit" value="Register" />
+      </div>
+      <div class="login_btn">
+        <p>
+          {% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a>
+        </p>
+      </div>
     </form>
-</div>
+  </div>
 {% endblock content %}

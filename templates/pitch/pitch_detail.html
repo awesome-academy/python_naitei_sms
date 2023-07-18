@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+{% load i18n %}
+{% block content %}
+  <h1>Title: {{ pitch.title }}</h1>
+  {% if images.count > 0 %}
+    {% include "carousel_banner.html" with images=images %}
+  {% endif %}
+  <p>
+    <strong>{% trans "Address:" %} {{ pitch.address }}</strong>
+  </p>
+  <p>
+    <strong>{% trans "Size:" %} {{ pitch.get_label_size }}</strong>
+  </p>
+  <p>
+    <strong>{% trans "Surface:" %} {{ pitch.get_label_grass }}</strong>
+  </p>
+  <p>{% trans "Description" %} {{ pitch.description }}</p>
+{% endblock content %}

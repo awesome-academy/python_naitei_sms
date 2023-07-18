@@ -1,0 +1,38 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% load i18n %}
+{% bootstrap_javascript %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% block content %}
+  <h1>List Pitch</h1>
+  {% if pitch_list %}
+    <ul class="pl-40">
+      {% for pitch in pitch_list %}
+        <div class="card rem-18">
+          <img src="{{ pitch.banner }}"
+               class="card-img-top"
+               alt="Image"
+               height="200px"
+               width="100px">
+          <div class="card-body">
+            <h5 class="card-title">{{ pitch.title }}</h5>
+            <p class="card-text">{{ pitch.description }}</p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">{{ pitch.address }}</li>
+            <li class="list-group-item">{{ pitch.price }}</li>
+            <li class="list-group-item">{{ pitch.size }}</li>
+            <li class="list-group-item">{{ pitch.surface }}</li>
+          </ul>
+          <div class="card-body">
+            <a href="{{ pitch.get_absolute_url }}" class="card-link">{% trans "Detail" %}</a>
+          </div>
+        </div>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>{% trans "There are no pitch in the system." %}</p>
+  {% endif %}
+{% endblock %}
