@@ -1,0 +1,31 @@
+.sidebar-nav {
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.mlt-20 {
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+.pl-20 {
+  padding-left: 20px;
+}
+
+.pl-40 {
+  padding-left: 40px;
+}
+
+.hover-underline:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.red {
+  color: red;
+}
+
+.blue {
+  color: #4199fe;
+}
