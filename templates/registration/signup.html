@@ -14,6 +14,11 @@
                 {{ field.label_tag }} {{ field }}
             </p>
         {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="red">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
         <input type="submit" value="Register" />
         <p>
             {% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a>
