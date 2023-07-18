@@ -139,7 +139,7 @@ LANGUAGES = [
     ("vi", _("Vietnamese")),
 ]
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Ho_Chi_Minh"
 
 USE_I18N = True
 

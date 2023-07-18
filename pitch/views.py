@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from pitch.custom_fnc import convert_timedelta
 from project1.settings import HOST
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 # Create your views here.
 def index(request):
@@ -24,7 +26,7 @@ class PitchListView(generic.ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Pitch.objects.all()
+        return Pitch.objects.filter(image__isnull=False)
 
     def get_context_data(self, **kwargs):
         context = super(PitchListView, self).get_context_data(**kwargs)
@@ -97,3 +99,11 @@ def pitch_detail(request, pk):
         )
 
     return render(request, "pitch/pitch_detail.html", context=context)
+
+
+class MyOrderedView(LoginRequiredMixin, generic.ListView):
+    model = Order
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Order.objects.filter(renter=self.request.user).order_by("created_date")
