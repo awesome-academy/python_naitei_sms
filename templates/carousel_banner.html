@@ -1,31 +1,23 @@
 {% load static %}
-{% load bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
 <div id="carouselExampleIndicators"
-     class="carousel slide"
+     class="carousel slide shadow p-3 mb-5 bg-body-tertiary rounded"
      data-bs-ride="carousel">
-  <div class="carousel-indicators">
-    <button type="button"
-            data-bs-target="#carouselExampleIndicators"
-            data-bs-slide-to="0"
-            class="active"
-            aria-current="true"
-            aria-label="Slide 1"></button>
-    <button type="button"
-            data-bs-target="#carouselExampleIndicators"
-            data-bs-slide-to="1"
-            aria-label="Slide 2"></button>
-    <button type="button"
-            data-bs-target="#carouselExampleIndicators"
-            data-bs-slide-to="2"
-            aria-label="Slide 3"></button>
+  <div class="carousel-indicators shadow-none p-3 mb-5 bg-body-tertiary rounded">
+    {% for image in images %}
+      <button type="button"
+              data-bs-target="#carouselExampleIndicators"
+              data-bs-slide-to="{{ forloop.counter0 }}"
+              class="active"
+              aria-current="true"
+              aria-label="Slide {{ forloop.counter1 }}">
+      </button>
+    {% endfor %}
   </div>
   <div class="carousel-inner">
     {% for image in images %}
       <div class="carousel-item {% if forloop.first %}active{% endif %} ">
         <img src="{{ image.image.url }}"
-             class="d-block w-100"
+             class="d-block "
              height="500px"
              width="100%"
              alt="iamge">

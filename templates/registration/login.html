@@ -3,21 +3,25 @@
 {% block content %}
   <div class="d-grid gap-2 col-6 ml-5 form_style">
     <form class="form_box" method="post" action="{% url 'login' %}">
-       {% if form.errors %}
-          <p>{% trans "Your username and password didn't match. Please try again." %}</p>
+      {% if form.errors %}
+        <p>
+          {% trans "Your username and password didn't match. Please try again." %}
+        </p>
+      {% endif %}
+      {% if next %}
+        {% if user.is_authenticated %}
+          <p>
+            {% trans "Your account doesn't have access to this page. To proceed,
+            please login with an account that has access." %}
+          </p>
+        {% else %}
+          <p>
+            {% trans "Please login to see this page." %}
+          </p>
         {% endif %}
-        {% if next %}
-          {% if user.is_authenticated %}
-            <p>
-              {% trans "Your account doesn't have access to this page. To proceed,
-              please login with an account that has access." %}
-            </p>
-          {% else %}
-            <p>{% trans "Please login to see this page." %}</p>
-          {% endif %}
-        {% endif %}
+      {% endif %}
       {% csrf_token %}
-      <table >
+      <table>
         <tr>
           <td>{{ form.username.label_tag }}</td>
           <td>{{ form.username }}</td>
@@ -28,13 +32,14 @@
         </tr>
       </table>
       <div class="submit_btn">
-        <button type="submit" class="btn btn-primary py-0">Login</button>
+        <button type="submit" class="btn btn-primary py-0">
+          Login
+        </button>
       </div>
       <input type="hidden" name="next" value="{{ next }}">
       <p class="pt-2 login_btn">
         <a class="badge bg-primary text-wrap" href="{% url 'password_reset' %}">{% trans "Reset password?" %}</a>
       </p>
     </form>
-    
   </div>
 {% endblock %}

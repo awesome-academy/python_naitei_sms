@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from pitch.constant import SIZE, SURFACE_GRASS, STATUS_ORDER
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.urls import reverse
+from django.utils import timezone
 # Create your models here.
 
 
@@ -60,16 +61,16 @@ class Pitch(models.Model):
 
     def __str__(self):
         return self.title
-    
+
     def get_absolute_url(self):
         return reverse("pitch-detail", args=[str(self.id)])
-    
+
     def get_label_grass(self):
         for grass in SURFACE_GRASS:
             if grass[0] == self.surface:
                 return grass[1]
         return ""
-    
+
     def get_label_size(self):
         for size in SIZE:
             if size[0] == self.size:
@@ -78,13 +79,21 @@ class Pitch(models.Model):
 
 
 class Order(models.Model):
-    time_start = models.DateTimeField(auto_now_add=True, null=False)
-    time_end = models.DateTimeField(auto_now=True, null=False)
+    time_start = models.DateTimeField(
+        null=False,
+        blank=False,
+        default=timezone.now()
+    )
+    time_end = models.DateTimeField(
+        null=False,
+        blank=False,
+        default=timezone.now()
+    )
     status = models.CharField(
         max_length=1,
         choices=STATUS_ORDER,
         blank=True,
-        default="n",
+        default="o",
         help_text="Types of surface grass",
     )
     price = models.PositiveIntegerField(
@@ -92,6 +101,7 @@ class Order(models.Model):
     )
     renter = models.ForeignKey(User, on_delete=models.CASCADE)
     voucher = models.ForeignKey(Voucher, on_delete=models.CASCADE)
+    pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
     cost = models.PositiveBigIntegerField(
         validators=[MaxValueValidator(20000000000), MinValueValidator(0)]
     )
@@ -126,7 +136,7 @@ class Image(models.Model):
         null=False,
         help_text="Image of the pitch",
     )
-    pitch = models.ForeignKey(Pitch,related_name='image', on_delete=models.CASCADE)
+    pitch = models.ForeignKey(Pitch, related_name="image", on_delete=models.CASCADE)
 
     class Meta:
         db_table = "images"

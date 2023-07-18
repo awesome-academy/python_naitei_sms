@@ -36,10 +36,10 @@ class CommentAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        "time_start",
-        "time_end",
         "status",
         "renter",
+        "time_start",
+        "time_end",
         "voucher",
         "cost",
         "created_date",
