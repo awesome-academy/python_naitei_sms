@@ -86,7 +86,9 @@ class Order(models.Model):
         db_table = "orders"
         ordering = ["created_date", "cost"]
 
-
+    def __str__(self):
+        return f"Order {self.pk} - {self.renter.username}"
+    
 class Comment(models.Model):
     renter = models.ForeignKey(User, on_delete=models.CASCADE)
     pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
@@ -99,7 +101,8 @@ class Comment(models.Model):
     class Meta:
         db_table = "comments"
         ordering = ["created_date"]
-
+    def __str__(self):
+            return f"Comment {self.pk} - {self.renter.username}"
 
 class Image(models.Model):
     image = models.ImageField(
