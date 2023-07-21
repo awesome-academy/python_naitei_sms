@@ -160,3 +160,6 @@ INTERNAL_IPS = [
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = '/uploads/'
