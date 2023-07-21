@@ -44,3 +44,4 @@ python3 manage.py test pitch.tests.test_models.YourTestClass.test_one_plus_one_e
 ############################
 Create file requirements
 pip3 freeze > requirements.txt
+source env/bin/activate
