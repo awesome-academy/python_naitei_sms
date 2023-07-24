@@ -2,6 +2,10 @@ import os
 from django.utils.translation import gettext_lazy as _
 from pathlib import Path
 import logging
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 IS_PRODUCT = int(os.environ.get("PRODUCT", 0)) == 1
@@ -60,6 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "pitch.apps.PitchConfig",
+    "account.apps.AccountConfig",
     "jquery",
     "bootstrap_datepicker_plus",
     "bootstrap5",
@@ -103,9 +108,12 @@ WSGI_APPLICATION = "project1.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "OPTIONS": {
-            "read_default_file": "./my.cnf",
-        },
+        "NAME": os.getenv("NAME_DB"),
+        "USER": os.getenv("USER_DB"),
+        "PASSWORD": os.getenv("PASS_DB"),
+        "HOST": HOST_MYSQL,
+        "PORT": os.getenv("PORT_DB"),
+
     }
 }
 
@@ -157,9 +165,16 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
-
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER =os.getenv("MAIL")
+EMAIL_HOST_PASSWORD = os.getenv("PASS")
+DEFAULT_FROM_EMAIL = os.getenv("MAIL")
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = '/uploads/'
+HOST = "http://localhost:8000" if IS_PRODUCT else "http://localhost:8000"

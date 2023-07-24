@@ -42,6 +42,11 @@ python3 manage.py test pitch.tests.test_models // test module
 python3 manage.py test pitch.tests.test_models.YourTestClass.test_one_plus_one_equals_two
 
 ############################
+Use Venv
+Run command creaet virtual environment
+python -m venv env
 Create file requirements
 pip3 freeze > requirements.txt
 source env/bin/activate
+Install Package
+pip install -r requirements.txt
