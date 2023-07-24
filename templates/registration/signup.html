@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
-{% load i18n %}
+{% load i18n %}     
 {% block content %}
-    <form method="post" novalidate>
+    <form class="form_box" method="post" novalidate>
         {% csrf_token %}
         <h2>{% trans "Sign Up" %}</h2>
         {% for field in form %}
@@ -11,17 +11,13 @@
                         {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
                     </ul>
                 {% endif %}
-                {{ field.label_tag }} {{ field }}
+                <div class = "fill_box">
+                    <p>{{ field.label_tag }} </p>
+                    {{ field }}
+                </div>
             </p>
         {% endfor %}
-        {% for error in form.non_field_errors %}
-            <div class="red">
-                <strong>{{ error|escape }}</strong>
-            </div>
-        {% endfor %}
-        <input type="submit" value="Register" />
-        <p>
-            {% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a>
-        </p>
+        <div class="submit_btn"><input type="submit" value="Register" /></div>
+        <div id="login_btn"><p >{% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a></p></div>
     </form>
 {% endblock content %}
