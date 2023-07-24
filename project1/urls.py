@@ -9,8 +9,10 @@ urlpatterns = [
     path("", RedirectView.as_view(url="pitch/")),
     path("admin/", admin.site.urls),
     path("pitch/", include("pitch.urls")),
+    path("accounts/", include("account.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", RedirectView.as_view(url="login/")),
+    path("i18n/", include("django.conf.urls.i18n")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # accounts/ login/ [name='login']
