@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 {% load i18n %}     
 {% block content %}
+<div class="form_style">
     <form class="form_box" method="post" novalidate>
         {% csrf_token %}
         <h2>{% trans "Sign Up" %}</h2>
@@ -18,6 +19,7 @@
             </p>
         {% endfor %}
         <div class="submit_btn"><input type="submit" value="Register" /></div>
-        <div id="login_btn"><p >{% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a></p></div>
+        <div class="login_btn"><p >{% trans "Already has an account?" %} <a href="{% url 'login' %}">{% trans "Login" %}</a></p></div>
     </form>
+</div>
 {% endblock content %}
