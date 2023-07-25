@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from pitch.constant import SIZE, SURFACE_GRASS, STATUS_ORDER
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.urls import reverse
 # Create your models here.
 
 
@@ -60,6 +60,21 @@ class Pitch(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        return reverse("pitch-detail", args=[str(self.id)])
+    
+    def get_label_grass(self):
+        for grass in SURFACE_GRASS:
+            if grass[0] == self.surface:
+                return grass[1]
+        return ""
+    
+    def get_label_size(self):
+        for size in SIZE:
+            if size[0] == self.size:
+                return size[1]
+        return ""
 
 
 class Order(models.Model):
@@ -106,12 +121,12 @@ class Comment(models.Model):
 
 class Image(models.Model):
     image = models.ImageField(
-        upload_to="uploads/",
+        upload_to="uploads",
         default="default-image.jpg",
         null=False,
         help_text="Image of the pitch",
     )
-    pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
+    pitch = models.ForeignKey(Pitch,related_name='image', on_delete=models.CASCADE)
 
     class Meta:
         db_table = "images"
