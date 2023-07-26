@@ -4,6 +4,7 @@ from pitch.constant import SIZE, SURFACE_GRASS, STATUS_ORDER
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.urls import reverse
 from django.utils import timezone
+
 # Create your models here.
 
 
@@ -77,18 +78,25 @@ class Pitch(models.Model):
                 return size[1]
         return ""
 
+    def get_absolute_url(self):
+        return reverse("pitch-detail", args=[str(self.id)])
+
+    def get_label_grass(self):
+        for grass in SURFACE_GRASS:
+            if grass[0] == self.surface:
+                return grass[1]
+        return ""
+
+    def get_label_size(self):
+        for size in SIZE:
+            if size[0] == self.size:
+                return size[1]
+        return ""
+
 
 class Order(models.Model):
-    time_start = models.DateTimeField(
-        null=False,
-        blank=False,
-        default=timezone.now()
-    )
-    time_end = models.DateTimeField(
-        null=False,
-        blank=False,
-        default=timezone.now()
-    )
+    time_start = models.DateTimeField(null=False, blank=False, default=timezone.now())
+    time_end = models.DateTimeField(null=False, blank=False, default=timezone.now())
     status = models.CharField(
         max_length=1,
         choices=STATUS_ORDER,
@@ -113,7 +121,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.pk} - {self.renter.username}"
-    
+
+
 class Comment(models.Model):
     renter = models.ForeignKey(User, on_delete=models.CASCADE)
     pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
@@ -126,8 +135,10 @@ class Comment(models.Model):
     class Meta:
         db_table = "comments"
         ordering = ["created_date"]
+
     def __str__(self):
-            return f"Comment {self.pk} - {self.renter.username}"
+        return f"Comment {self.pk} - {self.renter.username}"
+
 
 class Image(models.Model):
     image = models.ImageField(

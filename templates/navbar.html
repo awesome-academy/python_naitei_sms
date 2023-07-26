@@ -16,6 +16,11 @@
         </li>
         {% if user.is_authenticated %}
           <li>
+            <a href="{% url 'my-ordered' %}">My Ordered</a>
+          </li>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <li>
             <a href="#">Name: {{ user.get_username }}</a>
             <ul class="navbar-dropdown">
               <li>

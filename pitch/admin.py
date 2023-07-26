@@ -40,7 +40,6 @@ class OrderAdmin(admin.ModelAdmin):
         "renter",
         "time_start",
         "time_end",
-        "voucher",
         "cost",
         "created_date",
     )

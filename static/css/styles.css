@@ -30,6 +30,21 @@
   color: #4199fe;
 }
 
+.bg-green {
+  background-color: green !important;
+}
+
+.bg-orange {
+  background-color: #ffc107 !important;
+}
+
+.bg-gray {
+  background-color: #6c757d !important;
+}
+
+.line-height-none {
+  line-height: normal !important;
+}
 .rem-18 {
   width: 18rem;
 }
