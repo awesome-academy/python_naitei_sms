@@ -61,3 +61,87 @@
 .button-remove:hover {
   cursor: pointer;
 }
+.border-none {
+  border: none !important;
+}
+
+/* Set the opacity for the modal content */
+.modal {
+  background-color: transprent !important;
+  border-radius: 20px!important;
+}
+.pitch_lists {
+  margin: 0 40px;
+}
+.pitch_lists h1 {
+  font-weight: bold;
+  color: #008000;
+}
+
+.card {
+  transition: transform 0.2s;
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  background-color: #fce4ec;
+}
+
+.card-img-top {
+  height: 200px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+}
+.card-body{
+  text-align: center;
+  padding-top: 5px;
+}
+.card-text {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-align: justify;
+}
+
+.col {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-group-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 265.7px;
+}
+
+.col-6 {
+  padding: 0;
+  width: 265.7px;
+}
+
+.col-4 {
+  padding-right: 0;
+  padding-left: 2px;
+}
+
+.row {
+  margin-bottom: 5px;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+.border-none {
+  border: none !important;
+}

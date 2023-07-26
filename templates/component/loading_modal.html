@@ -1,12 +1,12 @@
 {% load static %}
-<div class="modal fade"
+<div class="modal fade bg-transparent "
      id="loading_modal"
      data-bs-backdrop="static"
      data-bs-keyboard="false"
      tabindex="-1"
      aria-labelledby="staticBackdropLabel"
      aria-hidden="true">
-  <div class="modal-dialog h-75 border-none ">
+  <div class="modal-dialog h-75 border-none bg-transparent">
     <!-- <div class="modal-content bg-transparent border-none ">
       <div class="d-flex flex-row gap-2 justify-content-center text-white align-items-center h-100 bg-transparent">
         <div class="spinner-border" role="status">
@@ -17,27 +17,16 @@
         </div>
       </div>
     </div> -->
-    <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">
-                            <img class="logo-img" style="width: 50px; height: 50px;" src="{% static 'image/logo.png' %}" alt="Logo">
-                            &nbsp;&nbsp; Pitch App
-                        </h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <div class="text-center text-sucess mt-3">
-                            <i class="fas fa-spinner fa-pulse fa-6x" style="color: #a5dc86;"></i>
+    <div class="modal-dialog modal-dialog-centered bg-transparent">
+                <div class="modal-content border-none bg-transparent">
+                    <div class="modal-body text-center bg-transparent">
+                        <div class="text-center text-sucess mt-3 bg-transparent">
+                            <i class="fas fa-spinner fa-pulse fa-6x bg-transparent" style="color: #a5dc86"></i>
                         </div>
                         <br>
-                        <div class="mb-3">Sending Email.....</div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="width: 65px;">Close</button>
+                        <div class="mb-3" style="color: white;">Sending Email.....</div>
                     </div>
                 </div>
             </div>
   </div>
 </div>
-
