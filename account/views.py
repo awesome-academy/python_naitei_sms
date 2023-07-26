@@ -10,7 +10,9 @@ from .models import EmailVerify
 from account.mail import send_mail_custom
 from project1.settings import HOST
 from django.utils.translation import gettext
+from django.views.decorators.csrf import csrf_protect
 
+@csrf_protect
 def sign_up(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -21,7 +23,7 @@ def sign_up(request):
             token = uuid.uuid4()
 
             link = HOST + reverse("verify-email", kwargs={"token": token})
-
+            
             user = User.objects.create_user(username, email, password)
             user.is_active = False
             user.save()
@@ -36,12 +38,17 @@ def sign_up(request):
 
             EmailVerify.objects.create(user=user, token=token)
 
-            return HttpResponseRedirect(reverse("index"))
-
+            return HttpResponseRedirect(reverse("send-mail-success"))
+        else:
+            return render(request, "registration/signup.html", {"form": form, "show_modal": False, "show_spinner_modal": False})
     else:
         form = RegisterForm()
-    return render(request, "registration/signup.html", {"form": form})
+    return render(request, "registration/signup.html", {"form": form, "show_modal": False, "show_spinner_modal": False})
 
+
+def send_mail_sucess(request):
+    context ={}
+    return render(request, "registration/send_mail_success.html", context=context)
 
 def verify_email(request, token):
     if EmailVerify.objects.filter(token=token).exists():

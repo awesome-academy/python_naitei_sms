@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "bootstrap_datepicker_plus",
     "bootstrap5",
     "compressor",
+    "fontawesomefree",
 ]
 
 MIDDLEWARE = [
@@ -113,7 +114,6 @@ DATABASES = {
         "PASSWORD": os.getenv("PASS_DB"),
         "HOST": HOST_MYSQL,
         "PORT": os.getenv("PORT_DB"),
-
     }
 }
 
@@ -150,12 +150,11 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles/"
-MEDIA_ROOT = BASE_DIR /"media/"
+MEDIA_ROOT = BASE_DIR / "media/"
 MEDIA_URL = "/uploads/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-
 
 
 STATICFILES_FINDERS = [
@@ -173,12 +172,12 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER =os.getenv("MAIL")
+EMAIL_HOST_USER = os.getenv("MAIL")
 EMAIL_HOST_PASSWORD = os.getenv("PASS")
 DEFAULT_FROM_EMAIL = os.getenv("MAIL")
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = '/uploads/'
+MEDIA_URL = "/uploads/"
 HOST = "http://localhost:8000" if IS_PRODUCT else "http://localhost:8000"
