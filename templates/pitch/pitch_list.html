@@ -17,14 +17,26 @@
                height="200px"
                width="100px">
           <div class="card-body">
-            <h5 class="card-title">{{ pitch.title }}</h5>
-            <p class="card-text">{{ pitch.description }}</p>
+            <h5 class="card-title">
+              {{ pitch.title }}
+            </h5>
+            <p class="card-text">
+              {{ pitch.description }}
+            </p>
           </div>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{ pitch.address }}</li>
-            <li class="list-group-item">{{ pitch.price }}</li>
-            <li class="list-group-item">{{ pitch.size }}</li>
-            <li class="list-group-item">{{ pitch.surface }}</li>
+            <li class="list-group-item">
+              {{ pitch.address }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.price }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.size }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.surface }}
+            </li>
           </ul>
           <div class="card-body">
             <a href="{{ pitch.get_absolute_url }}" class="card-link">{% trans "Detail" %}</a>
@@ -33,6 +45,8 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p>{% trans "There are no pitch in the system." %}</p>
+    <p>
+      {% trans "There are no pitch in the system." %}
+    </p>
   {% endif %}
 {% endblock %}
