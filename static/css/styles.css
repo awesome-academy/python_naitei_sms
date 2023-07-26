@@ -33,3 +33,11 @@
 .rem-18 {
   width: 18rem;
 }
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+.border-none {
+  border: none !important;
+}

@@ -1,0 +1,27 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block title %}
+<title>Registration Successful - Book Your Soccer Field</title>
+{% endblock title %}
+
+{% block content %}
+<div class="sucess">
+    <div class="sucess_login">
+        <div class="sucess_login_content">
+            <img class="sucess_logo-img" src="{% static 'image/logo.png' %}" alt="Logo">
+            <div class="success-icon">
+                <i class="far fa-check-circle"></i>
+            </div>
+            <div class="sucess_message">
+                <p>Congratulations! You have successfully registered PitchApp.</p>
+                <p>Please check your email to continue your booking Pitch online.</p>
+
+            </div>
+            <div class="sucess_back-btn">
+                <a href="{% url 'login' %}">Back to Login</a>
+            </div>
+        </div>
+        <img class="sucess_booking-image" src="{% static 'image/sucess_regis.jpg' %}" alt="Booking Image">
+    </div>
+</div>
+{% endblock content %}
