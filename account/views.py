@@ -10,6 +10,7 @@ from account.mail import send_mail_custom
 from project1.settings import HOST
 from django.utils.translation import gettext
 from django.views.decorators.csrf import csrf_protect
+from django.db import DatabaseError, IntegrityError, transaction
 
 
 @csrf_protect
@@ -59,13 +60,21 @@ def send_mail_success(request):
     return render(request, "registration/send_mail_success.html", context=context)
 
 
+@transaction.atomic
 def verify_email(request, token):
     if EmailVerify.objects.filter(token=token).exists():
         userVerify = EmailVerify.objects.get(token=token)
         user = userVerify.user
         user.is_active = True
-        user.save()
-        userVerify.delete()
+        try:
+            with transaction.atomic():
+                user.save()
+        except DatabaseError:
+            user.is_active = False
+
+        if user.is_active:
+            userVerify.delete()
+
         return render(request, "registration/verify_email_success.html")
     else:
         return render(request, "registration/verify_email_fail.html")

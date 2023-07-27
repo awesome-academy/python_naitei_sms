@@ -65,10 +65,9 @@ def pitch_detail(request, pk):
             username = request.user.username
             link = HOST + reverse_lazy("index")
 
-            cost = (
-                convert_timedelta(time_end - time_start) * (pitch.price)
-                - voucher.discount
-            )
+            cost = convert_timedelta(time_end - time_start) * (pitch.price)
+            if voucher:
+                cost -= voucher.discount
             Order.objects.create(
                 pitch=pitch,
                 time_start=time_start,
