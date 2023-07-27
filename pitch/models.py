@@ -85,9 +85,8 @@ class Order(models.Model):
     status = models.CharField(
         max_length=1,
         choices=STATUS_ORDER,
-        blank=True,
         default="o",
-        help_text="Types of surface grass",
+        help_text="Types of status order",
     )
     price = models.PositiveIntegerField(
         validators=[MaxValueValidator(2000000000), MinValueValidator(0)], default=0

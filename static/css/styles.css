@@ -169,3 +169,7 @@
 .text-left {
   text-align: left !important;
 }
+
+.display-none {
+  display: none !important;
+}

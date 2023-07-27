@@ -1,119 +1,36 @@
+{% extends 'email/verify_email_signup.html' %}
 {% load i18n %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8"
-          name="viewport"
-          content="width=device-width, initial-scale=1" />
-    <meta name="description" />
-    <meta name="keywords" />
-    <title>Verify Email</title>
-    <style type="text/css">
-      .container {
-        font-family: Arial, sans-serif;
-        background-color: #ffffff;
-        margin: 0;
-        padding: 0
-      }
-
-      .wrap-content {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 20px;
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
-      }
-
-      .box-header {
-        text-align: center;
-        padding: 20px 0;
-        background-color: #FFB6C1;
-        color: #ffffff;
-        border-radius: 8px 8px 0 0
-      }
-
-      .box-content {
-        padding: 20px;
-        line-height: 1.6;
-      }
-
-      .pink {
-        color: #FFB6C1;
-      }
-
-      .button-verify {
-        display: inline-block;
-        padding: 10px 20px;
-        margin-top: 20px;
-        background-color: #FFB6C1;
-        color: #ffffff !important;
-        text-decoration: none!important;
-        border-radius: 4px
-      }
-
-      .copyright {
-        text-align: center;
-        padding: 20px 0;
-        background-color: #f4f4f4;
-        border-radius: 0 0 8px 8px
-      }
-
-      .pt-4 {
-        padding-top: 4px !important;
-      }
-      .pl-8 {
-        padding-left: 8px !important;
-      }
-    </style>
-  </head>
-  <body class="container">
-    <div class="wrap-content">
-      <div class="box-header">
-        <img src="https://www.pngall.com/wp-content/uploads/9/Vector-Stadium-PNG-Clipart.png"
-             alt="Logo"
-             width="100px"
-             height="100px">
-        <h1>
-          You have ordered pitch on Pitch App
-        </h1>
+{% block title %}
+  <title>{% trans "You have ordered pitch on Pitch App" %}</title>
+{% endblock title %}
+{% block header %}
+  <h1>
+    {% trans "You have ordered pitch on Pitch App" %}
+  </h1>
+{% endblock header %}
+{% block content %}
+  <p>
+    {% trans "Thank you for booking the pitch on the Pitch App system." %}
+  </p>
+  <div>
+    <p>{% trans "Order information:" %}</p>
+    <div class="pl-8">
+      <div class="pt-4">
+        <strong>{% trans "Pitch: " %}</strong> {{ params.pitch_title }}
       </div>
-      <div class="box-content">
-        <p class="pink">
-          {% trans "Hello" %} <strong>{{ params.username }}</strong>
-        </p>
-        <p>
-          Thank you for booking the pitch on the Pitch App system.
-        </p>
-        <div>
-          <p>{% trans "Order information:" %}</p>
-          <div class="pl-8">
-            <div class="pt-4">
-              <strong>{% trans "Pitch: " %}</strong> {{ params.pitch_title }}
-            </div>
-            <div class="pt-4">
-              <strong>{% trans "Time start: " %}</strong> {{ params.time_start }}
-            </div>
-            <div class="pt-4">
-              <strong>{% trans "Time end: " %}</strong> {{ params.time_end }}
-            </div>
-            <div class="pt-4">
-              <strong>{% trans "Cost: " %}</strong> {{ params.cost }}
-            </div>
-          </div>
-        </div>
-        <p>
-          {% trans "For more detailed information please click the button below." %}
-        </p>
-        <a href="{{ params.link }}" class="button-verify">{% trans "View detail order" %}</a>
-        <p>Best regards,</p>
-        <p>Pitch App</p>
+      <div class="pt-4">
+        <strong>{% trans "Time start: " %}</strong> {{ params.time_start }}
       </div>
-      <div class="copyright">
-        <p>
-          &copy; 2023 Your Company Name. All rights reserved.
-        </p>
+      <div class="pt-4">
+        <strong>{% trans "Time end: " %}</strong> {{ params.time_end }}
+      </div>
+      <div class="pt-4">
+        <strong>{% trans "Cost: " %}</strong> {{ params.cost }}
       </div>
     </div>
-  </body>
-</html>
+  </div>
+  <p>
+    {% trans "For more detailed information please click the button below." %}
+  </p>
+  <a href="{{ params.link }}" class="button-verify">{% trans "View detail order" %}</a>
+{% endblock content %}

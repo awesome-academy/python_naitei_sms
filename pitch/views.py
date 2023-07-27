@@ -127,6 +127,7 @@ def order_cancel(request, pk):
     except Order.DoesNotExist:
         raise Http404("Order does not exist")
     context["order"] = order
+
     if request.method == "POST":
         form = CancelOrderModelForm(request.POST)
         if form.is_valid():
@@ -142,6 +143,10 @@ def order_cancel(request, pk):
                 "email/notify_cancel_order.html",
                 link=link,
                 username=username,
+                time_start=order.time_start,
+                time_end=order.time_end,
+                pitch_title=order.pitch.title,
+                cost=order.cost,
             )
         else:
             context["form"] = form
@@ -149,7 +154,8 @@ def order_cancel(request, pk):
         if order.status == "o":
             context["form"] = CancelOrderModelForm(
                 initial={
-                    "status": "d",
+                    "status": "o",
                 },
             )
+
     return render(request, "pitch/order_detail.html", context=context)
