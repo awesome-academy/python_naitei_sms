@@ -157,3 +157,15 @@
 .green {
   color: rgb(0, 122, 0);
 }
+
+.danger {
+  color: #ffc107;
+}
+
+.red {
+  color: red;
+}
+
+.text-left {
+  text-align: left !important;
+}

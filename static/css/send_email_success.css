@@ -1,65 +1,69 @@
 .sucess {
-    font-family: Arial, sans-serif;
-    background-image: linear-gradient(to left, rgba(255, 255, 255, 0.358) 15%, rgba(255, 255, 255, 0.2) 90%), url('https://lpa-design-studios.imgix.net/content/heros/Projects/Sport-Recreation/City-of-Elk-Grove-Multisport-Complex1.jpg?auto=format&domain=lpa-design-studios.imgix.net&fit=crop&fp-x=0.5&fp-y=0.5&h=1121&ixlib=php-2.1.1&q=60&w=1920');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  font-family: Arial, sans-serif;
+  background-image: linear-gradient(
+      to left,
+      rgba(255, 255, 255, 0.358) 15%,
+      rgba(255, 255, 255, 0.2) 90%
+    ),
+    url("https://lpa-design-studios.imgix.net/content/heros/Projects/Sport-Recreation/City-of-Elk-Grove-Multisport-Complex1.jpg?auto=format&domain=lpa-design-studios.imgix.net&fit=crop&fp-x=0.5&fp-y=0.5&h=1121&ixlib=php-2.1.1&q=60&w=1920");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 55px);
+  margin: 0;
 }
 
 .sucess_login {
-    text-align: center;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    display: flex;
-    justify-content: space-between;
-    background-color: #ffffffea;
+  text-align: center;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  background-color: #ffffffea;
 }
 .sucess_logo-img {
-    width: 150px;
-    height: 150px;
-    margin-bottom: 20px;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 20px;
 }
 
 .success-icon {
-    color: #f16983;
-    font-size: 4rem;
+  color: #f16983;
+  font-size: 4rem;
 }
 
 .sucess_message {
-    font-size: 1.2rem;
-    margin-top: 20px;
-    color: #333;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  color: #333;
 }
 
 .sucess_back-btn {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 .sucess_back-btn a {
-    color: #fff;
-    background-color: #f16983;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    font-size: 1.2rem;
-    transition: background-color 0.2s ease;
+  color: #fff;
+  background-color: #f16983;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
 }
 
 .sucess_back-btn a:hover {
-    background-color: #d84665;
+  background-color: #d84665;
 }
 
 .sucess_booking-image {
-    width: 400px;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+  width: 400px;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
-    

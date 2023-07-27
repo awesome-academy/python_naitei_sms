@@ -1,5 +1,25 @@
-{% extends "base_generic.html" %}
+{% extends "registration/verify_email_fail.html" %}
 {% load i18n %}
-{% block content %}
-  <div>{% trans "successfully" %}</div>
-{% endblock %}
+{% block title %}
+  <title>{% trans "Registration Successful" %}</title>
+{% endblock title %}
+{% block icon %}
+  <div class="success-icon danger">
+    <i class="far fa-check-circle"></i>
+  </div>
+{% endblock icon %}
+{% block description %}
+  <div class="sucess_message">
+    <p>
+      {% trans "Congratulations! You have successfully registered PitchApp!" %}
+    </p>
+    <div class="pb-0 font-i">
+      {% trans "Let's start using the app" %}
+    </div>
+  </div>
+{% endblock description %}
+{% block button_return %}
+  <div class="sucess_back-btn">
+    <a href="{% url 'login' %}">{% trans "Back to Login" %}</a>
+  </div>
+{% endblock button_return %}
