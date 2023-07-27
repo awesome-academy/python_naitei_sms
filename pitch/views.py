@@ -63,12 +63,11 @@ def pitch_detail(request, pk):
             voucher = form.cleaned_data["voucher"]
             email = request.user.email
             username = request.user.username
-            link = HOST + reverse_lazy("index")
 
             cost = convert_timedelta(time_end - time_start) * (pitch.price)
             if voucher:
                 cost -= voucher.discount
-            Order.objects.create(
+            order = Order.objects.create(
                 pitch=pitch,
                 time_start=time_start,
                 time_end=time_end,
@@ -78,6 +77,8 @@ def pitch_detail(request, pk):
                 voucher=voucher,
             )
 
+            link = HOST + reverse_lazy("order-detail", kwargs={"pk": order.id})
+
             send_mail_custom(
                 gettext("Notice to order a pitch from Pitch App"),
                 email,
@@ -85,9 +86,16 @@ def pitch_detail(request, pk):
                 "email/notify_order_pitch.html",
                 link=link,
                 username=username,
+                time_start=time_start,
+                time_end=time_end,
+                pitch_title=pitch.title,
+                price=pitch.price,
+                cost=cost,
             )
 
-            return HttpResponseRedirect(reverse_lazy("my-ordered"))
+            return HttpResponseRedirect(
+                reverse_lazy("order-detail", kwargs={"pk": order.id})
+            )
         else:
             context["form"] = form
 
