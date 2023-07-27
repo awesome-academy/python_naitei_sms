@@ -5,6 +5,7 @@ from pitch.models import Order
 from datetime import timedelta
 from django.utils import timezone
 from pitch.custom_fnc import convert_timedelta
+from django.utils.translation import gettext as _
 
 
 class RentalPitchModelForm(ModelForm):
@@ -14,8 +15,9 @@ class RentalPitchModelForm(ModelForm):
 
     def clean_time_start(self):
         data = self.cleaned_data["time_start"]
+
         if data <= timezone.now():
-            raise ValidationError("Thời gian bắt đầu phải lớn hơn giờ hiện tại")
+            raise ValidationError(_("Start time must be greater than current time."))
         return data
 
     def clean_time_end(self):
@@ -33,10 +35,12 @@ class RentalPitchModelForm(ModelForm):
         )
 
         if ordered.exists():
-            raise ValidationError("Đã tồn tại.")
+            raise ValidationError(
+                _("This time someone ordered! Please choose another time.")
+            )
 
         if end < start + timedelta(hours=1):
-            raise ValidationError("Chọn thời gian lớn hơn bắt đầu tối thiếu 1 tiếng.")
+            raise ValidationError(_("Choose a larger time starting at least 1 hour."))
 
         return end
 
@@ -46,20 +50,42 @@ class RentalPitchModelForm(ModelForm):
         start = self.cleaned_data["time_start"]
         end = self.cleaned_data["time_end"]
         cost = convert_timedelta(end - start) * (pitch.price)
+
         if cost < voucher.min_cost:
-            raise ValidationError("Chưa đạt mức tối thiểu để áp dụng voucher.")
+            raise ValidationError(
+                _("The minimum amount has not been reached to apply the voucher.")
+            )
 
         return voucher
 
     class Meta:
         model = Order
         fields = ["time_start", "time_end", "voucher"]
-        labels = {"time_start": "Thời gian bắt đầu: ", "time_end": "Thời gian trả sân:"}
+        labels = {
+            "time_start": _("Start time: "),
+            "time_end": _("Return time: "),
+        }
         help_texts = {
-            "time_start": "Nhập thời gian lớn hơn hôm nay.",
-            "time_end": "Nhập thời gian tối thiểu lớn hơn bắt đầu 1 tiếng.",
+            "time_start": _("Enter the current time big time."),
+            "time_end": _("Enter a minimum time greater than 1 hour start."),
         }
         widgets = {
             "time_start": DateTimePickerInput(),
             "time_end": DateTimePickerInput(),
         }
+
+
+class CancelOrderModelForm(ModelForm):
+    def clean_status(self):
+        status = self.cleaned_data["status"]
+
+        if status != "o":
+            raise ValidationError(
+                _("Once the order has been confirmed, it cannot be cancelled.")
+            )
+
+        return status
+
+    class Meta:
+        model = Order
+        fields = ["status"]

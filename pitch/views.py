@@ -5,11 +5,14 @@ from django.views import generic
 from account.mail import send_mail_custom
 from pitch.models import Pitch, Order
 from django.http import Http404, HttpResponseRedirect
-from pitch.forms import RentalPitchModelForm
+from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from pitch.custom_fnc import convert_timedelta
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from account.mail import send_mail_custom
+from django.utils.translation import gettext_lazy as _
 from project1.settings import HOST
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -26,7 +29,7 @@ class PitchListView(generic.ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Pitch.objects.filter(image__isnull=False)
+        return Pitch.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(PitchListView, self).get_context_data(**kwargs)
@@ -85,7 +88,7 @@ def pitch_detail(request, pk):
                 username=username,
             )
 
-            return HttpResponseRedirect(reverse_lazy("index"))
+            return HttpResponseRedirect(reverse_lazy("my-ordered"))
         else:
             context["form"] = form
 
@@ -107,3 +110,39 @@ class MyOrderedView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         return Order.objects.filter(renter=self.request.user).order_by("created_date")
+
+
+@login_required
+def order_cancel(request, pk):
+    context = {}
+    try:
+        order = Order.objects.get(pk=pk)
+    except Order.DoesNotExist:
+        raise Http404("Order does not exist")
+    context["order"] = order
+    if request.method == "POST":
+        form = CancelOrderModelForm(request.POST)
+        if form.is_valid():
+            email = request.user.email
+            username = request.user.username
+            link = HOST + reverse_lazy("order-detail", kwargs={"pk": pk})
+            order.status = "d"
+            order.save()
+            send_mail_custom(
+                _("Order cancellation notice from Pitch App"),
+                email,
+                None,
+                "email/notify_cancel_order.html",
+                link=link,
+                username=username,
+            )
+        else:
+            context["form"] = form
+    else:
+        if order.status == "o":
+            context["form"] = CancelOrderModelForm(
+                initial={
+                    "status": "d",
+                },
+            )
+    return render(request, "pitch/order_detail.html", context=context)

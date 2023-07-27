@@ -3,19 +3,22 @@
 {% block content %}
   <h1>List Ordered</h1>
   {% if order_list %}
-    <ul class="pl-40">
+    <ul class="pl-40 col-10">
       {% for order in order_list %}
         <li class="pt-2">
-          <div class="d-flex gap-1">
+          <div class="d-flex gap-1 ">
             <a href="{{ order.pitch.get_absolute_url }}">{{ order.pitch.title }}</a>
             {% if order.status == "o" %}
               <span class="badge rounded-pill bg-orange line-height-none ">{% trans "Ordered" %}</span>
-              <div>{% trans "Waiting confirm" %}</div>
+              <div class="flex-grow-1">{% trans "Waiting confirm" %}</div>
             {% elif order.status == "c" %}
               <span class="badge rounded-pill bg-green line-height-none ">{% trans "Confirmed" %}</span>
+              <div class="flex-grow-1"></div>
             {% else %}
               <span class="badge rounded-pill bg-gray line-height-none ">{% trans "Cancelled" %}</span>
+              <div class="flex-grow-1"></div>
             {% endif %}
+            <a href="{% url 'order-detail' order.id %}" class="button-remove">{% trans "Detail" %}</a>
           </div>
           <div class="d-flex gap-1">
             <strong>{% trans "Rental period: " %}</strong>
@@ -23,10 +26,6 @@
             <div>{{ order.time_start }}</div>
             <div>{% trans "to " %}</div>
             <div>{{ order.time_end }}</div>
-          </div>
-          <div class="d-flex gap-1">
-            <strong>{% trans "Payment to be made: " %}</strong>
-            <div>{{ order.cost }}</div>
           </div>
         </li>
       {% endfor %}

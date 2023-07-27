@@ -78,21 +78,6 @@ class Pitch(models.Model):
                 return size[1]
         return ""
 
-    def get_absolute_url(self):
-        return reverse("pitch-detail", args=[str(self.id)])
-
-    def get_label_grass(self):
-        for grass in SURFACE_GRASS:
-            if grass[0] == self.surface:
-                return grass[1]
-        return ""
-
-    def get_label_size(self):
-        for size in SIZE:
-            if size[0] == self.size:
-                return size[1]
-        return ""
-
 
 class Order(models.Model):
     time_start = models.DateTimeField(null=False, blank=False, default=timezone.now())

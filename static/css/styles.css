@@ -49,10 +49,15 @@
   width: 18rem;
 }
 
-.bg-transparent {
+.button-remove {
   background-color: transparent !important;
+  color: red;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
 }
 
-.border-none {
-  border: none !important;
+.button-remove:hover {
+  cursor: pointer;
 }
