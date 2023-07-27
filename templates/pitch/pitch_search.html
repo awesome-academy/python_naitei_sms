@@ -11,15 +11,18 @@
       {% include 'pitch/search_bar.html' %}
   </div>
   <div class="container mt-5 pitch_lists">
-    <h1 class="mb-4">List Pitch</h1>
-    {% if pitch_list %}
+    <h1 class="mb-4">{% trans "List Pitch" %}</h1>
+    {% if results %}
       <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for pitch in pitch_list %}
-            {% include 'pitch/pitch_card.html' %}
+        {% for pitch in results %}
+          {% include 'pitch/pitch_card.html' %}
         {% endfor %}
       </div>
     {% else %}
-      <p>{% trans "There are no pitch in the system." %}</p>
+    <div class="no_result">
+        <p>NO PITCH FOUND</p>
+        <span>There are no pitches that match your current filters. Try removing some of them to get better results.</span>
+      </div>
     {% endif %}
   </div>
 {% endblock %}

@@ -1,3 +1,4 @@
+import re
 from django.http import Http404
 from django.shortcuts import render
 from django.utils.translation import gettext
@@ -14,8 +15,9 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from account.mail import send_mail_custom
 from django.utils.translation import gettext_lazy as _
 from project1.settings import HOST
-
+from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import SearchForm
 
 
 # Create your views here.
@@ -41,7 +43,9 @@ class PitchListView(generic.ListView):
                 pitch.banner = "/uploads/uploads/default-image.jpg"
             pitch.surface = pitch.get_label_grass()
             pitch.size = pitch.get_label_size()
-        context["pitch_list"] = pitches
+
+        form = SearchForm(self.request.GET)
+        context = {"pitch_list" : pitches, "form":form}
         return context
 
 
@@ -159,3 +163,37 @@ def order_cancel(request, pk):
             )
 
     return render(request, "pitch/order_detail.html", context=context)
+
+
+def search_view(request):
+    form = SearchForm(request.GET)
+    query = request.GET.get("q")
+    address = request.GET.get("address")
+    price = request.GET.get("price")
+    size = request.GET.get("size")
+    surface = request.GET.get("surface")
+    results = Pitch.objects.all()  # Initialize results with all pitches
+    ask = [query, address, price, size, surface]
+    if query:
+        results = results.filter(
+            Q(title__startswith=query)
+            | Q(title__iregex=r"\b{}\w*\b".format(re.escape(query)))
+        )
+    if address:
+        results = results.filter(address__icontains=query)
+    if price:
+        results = results.filter(price=price)
+    if size:
+        results = results.filter(size=size)
+    if surface:
+        results = results.filter(surface=surface)
+
+    for pitch in results:
+            if pitch.image.all().exists():
+                pitch.banner = pitch.image.all()[0].image.url
+            else:
+                pitch.banner = "/uploads/uploads/default-image.jpg"
+            pitch.surface = pitch.get_label_grass()
+            pitch.size = pitch.get_label_size()
+    context = {"query": ask, "results": results, "form": form}
+    return render(request, "pitch/pitch_search.html", context)

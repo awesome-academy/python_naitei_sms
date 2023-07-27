@@ -5,6 +5,8 @@ from pitch.models import Order
 from datetime import timedelta
 from django.utils import timezone
 from pitch.custom_fnc import convert_timedelta
+from django.utils.translation import gettext as _
+from django import forms
 from django.utils.translation import gettext_lazy as _
 
 
@@ -92,3 +94,24 @@ class CancelOrderModelForm(ModelForm):
     class Meta:
         model = Order
         fields = ["status"]
+
+SURFACE_CHOICES = [
+    ('', _('Surface')),
+    ('a', _('Artificial')),
+    ('n', _('Natural')),
+    ('m', _('Mixed')),
+]
+
+SIZE_CHOICES = [
+    ('', _('Size')),
+    ('1', _('Pitch 5')),
+    ('2', _('Pitch 7')),
+    ('3', _('Pitch 12')),
+]
+
+class SearchForm(forms.Form):
+    q = forms.CharField(label=_('Key Word'), max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Search pitch')}))
+    surface = forms.ChoiceField(label=_('Surface'), choices=SURFACE_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'submitForm()'}))
+    size = forms.ChoiceField(label=_('Size'), choices=SIZE_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'submitForm()'}))
+    address = forms.CharField(label=_('Address'), max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control','placeholder': _('Enter price')}))
+    price = forms.DecimalField(label=_('Price'), max_digits=10, decimal_places=2, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Enter address')}))

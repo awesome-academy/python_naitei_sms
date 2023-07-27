@@ -1,0 +1,47 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% load i18n %}
+{% bootstrap_javascript %}
+<form id ="search-form" action="{% url 'search' %}" method="get">
+  <div class="row justify-content-center mt-5">
+    <div class="row d-flex col-md-7">
+      <div class="input-group d-flex">
+        <div class="d-flex flex-row align-items-center wrap-input-form">
+          {{ form.q }}
+          <i class="fa-solid fa-circle-xmark danger pl-1" onclick="clearFields('id_q')" ></i>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="button-search">{% trans "Search" %}</button>
+        </div>
+      </div>
+    </div>
+    <div class="row d-flex col-md-7">
+      <div class="input-group mb-3 ">
+        <div class="col-3 wrap-input-form">
+          {{ form.surface }}
+        </div>
+        <div class="col-3 wrap-input-form">
+          {{ form.size }}
+        </div>
+        <div class="d-flex flex-row col-3 align-items-center wrap-input-form">
+          {{ form.address}}
+          <i class="fa-solid fa-circle-xmark danger pl-1 " onclick="clearFields('id_address')"></i>
+        </div>
+        <div class="d-flex flex-row col-3 align-items-center wrap-input-form">
+          {{form.price}}
+          <i class="fa-solid fa-circle-xmark danger pl-1" onclick="clearFields('id_price')"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</form>
+<script>
+    function clearFields(fieldID) {
+        document.getElementById(fieldID).value = "";
+    }
+    function submitForm() {
+        document.getElementById('search-form').submit();
+    }
+</script>
