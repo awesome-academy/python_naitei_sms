@@ -1,50 +1,61 @@
 {% extends "base_generic.html" %}
 {% load i18n %}
+{% load bootstrap5 %}
+
 {% block content %}
-  {{ form.media }}
-  <header>
-    <h1 class="pt-4">{{ pitch.title }}</h1>
-  </header>
-  <div class="container text-center">
-    <div class="row">
-      <div class="col-8">
-        {% if images.count > 0 %}
-          {% include "carousel_banner.html" with images=images %}
-        {% endif %}
+{{ form.media }}
+<div>
+  <div class="row d-flex justify-content-center pt-4">
+    <div class="col-7 ">
+      {% if images.count > 0 %}
+      {% include "carousel_banner.html" with images=images %}
+      {% endif %}
+    </div>
+    <div class="col-4 ">
+      <div class="detail_card shadow">
+        <div class="detail_card_body">
+          <h1 class="pt-4">
+            {% trans "Title" %}: {{ pitch.title }}
+          </h1>
+          <div class="rating">
+            <p> rating stars</p>
+          </div>
+          <h3 class="card-title">{% trans "Booking" %}</h3>
+          {% if form %}
+          <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="d-flex justify-content-center">
+              <input type="submit" class="btn btn-primary mt-3" value="{% trans 'Submit' %}">
+            </div>
+          </form>
+          {% endif %}
+        </div>
       </div>
-      <section class="col-4 ">
-        <h3 class="text-start fs-3">
-          {% trans "Detail pitch" %}
-        </h3>
-        <ul>
-          <li class="text-start">
-            {% trans "Address" %}: {{ pitch.address }}
-          </li>
-          <li class="text-start">
-            {% trans "Size" %}: {{ pitch.get_label_size }}
-          </li>
-          <li class="text-start">
-            {% trans "Surface" %}: {{ pitch.get_label_grass }}
-          </li>
-          <li class="text-start">
-            {% trans "Phone" %}: {{ pitch.phone }}
-          </li>
-        </ul>
-        <p class="text-start">
-          {{ pitch.description }}
-        </p>
-      </section>
     </div>
   </div>
-  {% if form %}
-    <div>
-      <form action="" method="post">
-        {% csrf_token %}
-        <table>
-          {{ form.as_div }}
-        </table>
-        <input class="mt-3" type="submit" value="Submit">
-      </form>
+  <div class="row d-flex justify-content-center ">
+    <div class="col-11 detail_card shadow mb-3">
+      <div class="detail_card_body">
+        <h3 class="card-title">{% trans "Detail" %}</h3>
+        <ul class="list-group">
+          <li class="list-group-item"><strong>{% trans "Address" %}:</strong> {{ pitch.address }}</li>
+          <li class="list-group-item"><strong>{% trans "Size" %}:</strong> {{ pitch.get_label_size }}</li>
+          <li class="list-group-item"><strong>{% trans "Surface" %}:</strong> {{ pitch.get_label_grass }}</li>
+        </ul>
+      </div>
     </div>
-  {% endif %}
+    <div class="col-11 detail_card shadow mb-3">
+      <div class="detail_card_body">
+        <h3 class="card-title">{% trans "Description" %}</h3>
+        <p class="card-text">{{ pitch.description }}</p>
+      </div>
+    </div>
+    <div class="col-11 detail_card shadow mb-3">
+        <div class="detail_card_body">
+          <h3 class="card-title">{% trans "COMMENT" %}</h3>
+        </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}
