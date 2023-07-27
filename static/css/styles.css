@@ -68,7 +68,7 @@
 /* Set the opacity for the modal content */
 .modal {
   background-color: transprent !important;
-  border-radius: 20px!important;
+  border-radius: 20px !important;
 }
 .pitch_lists {
   margin: 0 40px;
@@ -97,7 +97,7 @@
   object-fit: cover;
   border-radius: 15px 15px 0 0;
 }
-.card-body{
+.card-body {
   text-align: center;
   padding-top: 5px;
 }
@@ -144,4 +144,16 @@
 
 .border-none {
   border: none !important;
+}
+
+.fs-12 {
+  font-size: 12px !important;
+}
+
+.fs-14 {
+  font-size: 14px !important;
+}
+
+.green {
+  color: rgb(0, 122, 0);
 }
