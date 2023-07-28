@@ -1,0 +1,51 @@
+.detail_container{
+  margin-top: 50px;
+  max-width: 1200px;
+}
+
+input[type="submit"] {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #5082c3;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Style the card */
+.detail_card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* Style the card body */
+.detail_card-body {
+  padding: 16px;
+}
+
+/* Style the card title */
+.card-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Style the list group */
+.list-group {
+  margin-bottom: 0;
+}
+
+.list-group-item {
+  border: none;
+}
+
+/* Style the comment section */
+.card-title.comment {
+  margin-bottom: 16px;
+}
