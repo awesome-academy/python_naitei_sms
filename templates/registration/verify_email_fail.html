@@ -1,7 +1,52 @@
 {% extends "base_generic.html" %}
 {% load i18n %}
+{% load static %}
+{% block title %}
+  <title>{% trans "Account verification failed" %}</title>
+{% endblock title %}
 {% block content %}
-  <div>
-    {% trans "The authentication token does not exist or is already in use." %}
+  <div class="sucess m-0 p-0">
+    <div class="sucess_login ">
+      <div class="sucess_login_content pl-2">
+        <div class="d-flex justify-content-between align-items-center pb-4">
+          <div class="col-3">
+            <img src="{% static 'image/logo.png' %}"
+                 alt="Logo"
+                 height="60px"
+                 width="60px">
+          </div>
+          <div class="col-9">
+            <h4 class="p-0 m-0 text-left">
+              <strong class="green">Pitch App</strong>
+            </h4>
+          </div>
+        </div>
+        {% block icon %}
+          <div class="success-icon danger">
+            <i class="fa-solid fa-circle-xmark danger"></i>
+          </div>
+        {% endblock icon %}
+        {% block description %}
+          <div class="sucess_message">
+            <p>
+              {% trans "Account verification failed!." %}
+            </p>
+            <div class="pb-0 font-i red">
+              {% trans "Token does not exist or has been used." %}
+            </div>
+          </div>
+        {% endblock description %}
+        {% block button_return %}
+          <div class="sucess_back-btn">
+            <a href="{% url 'login' %}" class="bg-orange">{% trans "Back to Login" %}</a>
+          </div>
+        {% endblock button_return %}
+      </div>
+      <img class="sucess_booking-image"
+           src="{% static 'image/sucess_regis.jpg' %}"
+           alt="Booking Image"
+           width="400px"
+           height="100%">
+    </div>
   </div>
-{% endblock %}
+{% endblock content %}

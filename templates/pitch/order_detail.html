@@ -8,7 +8,9 @@
       <a href="{{ order.pitch.get_absolute_url }}">{{ order.pitch.title }}</a>
       {% if order.status == "o" %}
         <span class="badge rounded-pill bg-orange line-height-none ">{% trans "Ordered" %}</span>
-        <div class="flex-grow-1">{% trans "Waiting confirm" %}</div>
+        <div class="flex-grow-1">
+          {% trans "Waiting confirm" %}
+        </div>
       {% elif order.status == "c" %}
         <span class="badge rounded-pill bg-green line-height-none ">{% trans "Confirmed" %}</span>
       {% else %}
@@ -30,6 +32,9 @@
       <div class="pb-2">
         <form action="" method="post">
           {% csrf_token %}
+          <div class="display-none">
+            {{ form.as_div }}
+          </div>
           <input class="mt-3" type="submit" value="Cancel">
         </form>
       </div>

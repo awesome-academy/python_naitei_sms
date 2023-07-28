@@ -5,7 +5,7 @@ from pitch.models import Order
 from datetime import timedelta
 from django.utils import timezone
 from pitch.custom_fnc import convert_timedelta
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 
 class RentalPitchModelForm(ModelForm):
@@ -45,13 +45,16 @@ class RentalPitchModelForm(ModelForm):
         return end
 
     def clean_voucher(self):
-        pitch = self.pitch
         voucher = self.cleaned_data["voucher"]
-        start = self.cleaned_data["time_start"]
-        end = self.cleaned_data["time_end"]
-        cost = convert_timedelta(end - start) * (pitch.price)
+        pitch = self.pitch
+        try:
+            start = self.cleaned_data["time_start"]
+            end = self.cleaned_data["time_end"]
+            cost = convert_timedelta(end - start) * (pitch.price)
+        except KeyError:
+            raise ValidationError(_("Invalid time start and time end values."))
 
-        if cost < voucher.min_cost:
+        if voucher and cost < voucher.min_cost:
             raise ValidationError(
                 _("The minimum amount has not been reached to apply the voucher.")
             )
@@ -62,12 +65,12 @@ class RentalPitchModelForm(ModelForm):
         model = Order
         fields = ["time_start", "time_end", "voucher"]
         labels = {
-            "time_start": _("Start time: "),
-            "time_end": _("Return time: "),
+            "time_start": "Start time: ",
+            "time_end": "Return time: ",
         }
         help_texts = {
-            "time_start": _("Enter the current time big time."),
-            "time_end": _("Enter a minimum time greater than 1 hour start."),
+            "time_start": "Enter the current time big time.",
+            "time_end": "Enter a minimum time greater than 1 hour start.",
         }
         widgets = {
             "time_start": DateTimePickerInput(),

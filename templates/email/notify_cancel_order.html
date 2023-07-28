@@ -1,4 +1,38 @@
-<div>
-  <h1>Xin chao {{ params.username }}!!!!</h1>
-  <a href="{{ params.link }}">Click vao day de xem chi tiet</a>
-</div>
+{% extends 'email/verify_email_signup.html' %}
+{% load i18n %}
+{% block title %}
+  <title>{% trans "You canceled an order from Pitch App" %}</title>
+{% endblock title %}
+{% block header %}
+  <h1>
+    {% trans "You canceled an order from Pitch App" %}
+  </h1>
+{% endblock header %}
+{% block content %}
+  <p>
+    {% trans "Thank you for booking the pitch on the Pitch App system." %}
+  </p>
+  <div>
+    <p>
+      {% trans "Order information is canceled: " %}
+    </p>
+    <div class="pl-8">
+      <div class="pt-4">
+        <strong>{% trans "Pitch: " %}</strong> {{ params.pitch_title }}
+      </div>
+      <div class="pt-4">
+        <strong>{% trans "Time start: " %}</strong> {{ params.time_start }}
+      </div>
+      <div class="pt-4">
+        <strong>{% trans "Time end: " %}</strong> {{ params.time_end }}
+      </div>
+      <div class="pt-4">
+        <strong>{% trans "Cost: " %}</strong> {{ params.cost }}
+      </div>
+    </div>
+  </div>
+  <p>
+    {% trans "For more detailed information please click the button below." %}
+  </p>
+  <a href="{{ params.link }}" class="button-verify">{% trans "View detail order" %}</a>
+{% endblock content %}
