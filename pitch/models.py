@@ -93,7 +93,9 @@ class Order(models.Model):
         validators=[MaxValueValidator(2000000000), MinValueValidator(0)], default=0
     )
     renter = models.ForeignKey(User, on_delete=models.CASCADE)
-    voucher = models.ForeignKey(Voucher, on_delete=models.CASCADE)
+    voucher = models.ForeignKey(
+        Voucher, on_delete=models.CASCADE, null=True, blank=True
+    )
     pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
     cost = models.PositiveBigIntegerField(
         validators=[MaxValueValidator(20000000000), MinValueValidator(0)]

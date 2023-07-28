@@ -3,14 +3,14 @@ from .forms import RegisterForm
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from django.core.mail import BadHeaderError, send_mail
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 import uuid
 from .models import EmailVerify
 from account.mail import send_mail_custom
 from project1.settings import HOST
 from django.utils.translation import gettext
 from django.views.decorators.csrf import csrf_protect
+from django.db import DatabaseError, IntegrityError, transaction
 
 
 @csrf_protect
@@ -55,19 +55,26 @@ def sign_up(request):
     )
 
 
-def send_mail_sucess(request):
+def send_mail_success(request):
     context = {}
     return render(request, "registration/send_mail_success.html", context=context)
 
 
+@transaction.atomic
 def verify_email(request, token):
     if EmailVerify.objects.filter(token=token).exists():
         userVerify = EmailVerify.objects.get(token=token)
         user = userVerify.user
         user.is_active = True
-        user.save()
-    else:
-        return HttpResponse(gettext("Token has been used or does not exist."))
+        try:
+            with transaction.atomic():
+                user.save()
+        except DatabaseError:
+            user.is_active = False
 
-    context = {"var": "hello"}
-    return render(request, "registration/verify-email.html", context=context)
+        if user.is_active:
+            userVerify.delete()
+
+        return render(request, "registration/verify_email_success.html")
+    else:
+        return render(request, "registration/verify_email_fail.html")

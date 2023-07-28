@@ -9,8 +9,8 @@
     <meta charset="utf-8"
           name="viewport"
           content="width=device-width, initial-scale=1" />
-    <meta name="description" />
-    <meta name="keywords" />
+    <meta name="description" content="Website to book a pitch easily" />
+    <meta name="keywords" content="Pitch, Sân bóng, Book, Order" />
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     <!-- Add additional CSS in static file -->
@@ -27,16 +27,16 @@
   </head>
   <body>
     <div class="container-fluid p-0 m-0">
-      <div class="row">
-        <div class="col-sm-12">
+      <div class="row p-0 m-0">
+        <div class="col-sm-12 p-0 m-0">
           {% block nav %}
             {% include "navbar.html" %}
           {% endblock nav %}
         </div>
       </div>
       <div>
-        <div class="col-sm-12">
-          <div class="row ">
+        <div class="col-sm-12 p-0 m-0">
+          <div class="row p-0 m-0">
             {% block content %}
             {% endblock content %}
           </div>

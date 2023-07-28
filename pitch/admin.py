@@ -9,7 +9,15 @@ class ImageInline(admin.TabularInline):
 @admin.register(Pitch)
 class PitchAdmin(admin.ModelAdmin):
     list_display = ("address", "title", "description", "size", "surface", "price")
-    fields = [("address"), ("title"), ("size"), ("surface"), ("price"), ("description")]
+    fields = [
+        ("address"),
+        ("title"),
+        ("size"),
+        ("phone"),
+        ("surface"),
+        ("price"),
+        ("description"),
+    ]
     inlines = [ImageInline]
     list_filter = ("size", "surface", "price")
 
