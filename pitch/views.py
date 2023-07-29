@@ -1,12 +1,11 @@
 import re
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
 from pitch.models import Pitch, Order
 from django.db.models import Count
-from django.http import Http404, HttpResponseRedirect
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
 from django.urls import reverse_lazy, reverse
@@ -146,6 +145,13 @@ def order_cancel(request, pk):
         else:
             context["form"] = form
     else:
+        if order.renter.id != request.user.id:
+            return render(
+                request,
+                "error.html",
+                {"text_content": _("You can not access this page.")},
+                status=302,
+            )
         if order.status == "o":
             context["form"] = CancelOrderModelForm(
                 initial={
