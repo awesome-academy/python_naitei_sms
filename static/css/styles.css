@@ -1,3 +1,11 @@
+:root {
+  --main-color: #4199fe;
+  --main-hover-color: #2581dc;
+  --pink-color: #f16983;
+  --orange-color: #ffc107;
+  --button-color: #008000;
+}
+
 .sidebar-nav {
   margin-top: 20px;
   padding: 0;
@@ -27,19 +35,27 @@
 }
 
 .blue {
-  color: #4199fe;
+  color: var(--main-color);
+}
+
+.bg-blue {
+  background-color: var(--main-color) !important;
 }
 
 .bg-green {
-  background-color: green !important;
+  background-color: var(--button-color) !important;
 }
 
 .bg-orange {
-  background-color: #ffc107 !important;
+  background-color: var(--orange-color) !important;
 }
 
 .bg-gray {
   background-color: #6c757d !important;
+}
+
+.bg-pink {
+  background-color: var(--pink-color) !important;
 }
 
 .line-height-none {
@@ -67,7 +83,7 @@
 
 /* Set the opacity for the modal content */
 .modal {
-  background-color: transprent !important;
+  background-color: transparent !important;
   border-radius: 20px !important;
 }
 .pitch_lists {
@@ -75,7 +91,7 @@
 }
 .pitch_lists h1 {
   font-weight: bold;
-  color: #008000;
+  color: var(--button-color);
 }
 
 .card {
@@ -141,7 +157,7 @@
 }
 .modal {
   background-color: transprent !important;
-  border-radius: 20px!important;
+  border-radius: 20px !important;
 }
 .pitch_lists {
   margin: 0 40px;
@@ -160,9 +176,9 @@
   width: 100%;
 }
 .card-wrapper {
-    width: 400px;
-    margin: 10px; /* Khoảng cách giữa các card */
-  }
+  width: 400px;
+  margin: 10px; /* Khoảng cách giữa các card */
+}
 
 .card:hover {
   transform: scale(1.05);
@@ -175,7 +191,7 @@
   object-fit: cover;
   border-radius: 15px 15px 0 0;
 }
-.card-body{
+.card-body {
   text-align: center;
   padding-top: 5px;
 }
@@ -202,10 +218,10 @@
   max-width: 265.7px;
 }
 
-.col-5{
+.col-5 {
   padding-right: 0;
 }
-.col-7{
+.col-7 {
   padding-left: 0;
 }
 .row {
@@ -229,15 +245,19 @@
 }
 
 .green {
-  color: rgb(0, 122, 0);
+  color: var(--button-color);
 }
 
 .danger {
-  color: #ffc107;
+  color: var(--orange-color);
 }
 
 .red {
   color: red;
+}
+
+.white {
+  color: white !important;
 }
 
 .text-left {
@@ -248,19 +268,28 @@
   display: none !important;
 }
 
-.no_result p{
+.no_result p {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bolder;
   color: #6f7070;
   font-size: x-large;
 }
-.no_result{
+
+.no_result {
   max-width: fit-content;
-  padding: 20px!important;
+  padding: 20px !important;
   background-color: #eecce9;
   border: 1px solid #ddd;
   border-radius: 30px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 10px;
   margin: 20px;
+}
+
+.custom-icon {
+  font-style: normal !important;
+  background-color: gray;
+  padding: 2% 6%;
+  border-radius: 50%;
+  color: white;
 }

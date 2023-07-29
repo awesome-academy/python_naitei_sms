@@ -4,6 +4,7 @@
   {{ form.media }}
   <div>
     <h1>{% trans "Info order" %}</h1>
+    {% include 'component/loading_modal.html' %}
     <div class="d-flex gap-1 ">
       <a href="{{ order.pitch.get_absolute_url }}">{{ order.pitch.title }}</a>
       {% if order.status == "o" %}
@@ -35,7 +36,11 @@
           <div class="display-none">
             {{ form.as_div }}
           </div>
-          <input class="mt-3" type="submit" value="Cancel">
+          <input class="mt-3"
+                 type="submit"
+                 data-bs-toggle="modal"
+                 data-bs-target="#loading_modal"
+                 value="Cancel">
         </form>
       </div>
     {% endif %}

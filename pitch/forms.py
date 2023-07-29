@@ -67,8 +67,8 @@ class RentalPitchModelForm(ModelForm):
         model = Order
         fields = ["time_start", "time_end", "voucher"]
         labels = {
-            "time_start": "Start time: ",
-            "time_end": "Return time: ",
+            "time_start": "Start time ",
+            "time_end": "Return time ",
         }
         help_texts = {
             "time_start": "Enter the current time big time.",

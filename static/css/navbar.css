@@ -12,7 +12,7 @@ body {
 
 .navigation {
   height: 55px;
-  background: linear-gradient(45deg, #4199fe, #4199fe);
+  background-color: var(--main-color);
   position: relative;
 }
 .brand {
@@ -67,11 +67,11 @@ nav ul li a {
 }
 nav ul li a:hover,
 nav ul li a:visited:hover {
-  background: #2581dc;
+  background: var(--main-hover-color);
   color: #ffffff;
 }
 .navbar-dropdown li a {
-  background: #2581dc;
+  background: var(--main-color);
 }
 nav ul li a:not(:only-child):after,
 nav ul li a:visited:not(:only-child):after {
@@ -177,6 +177,6 @@ nav ul li ul li a {
   outline: none !important;
   border: none !important;
   color: white;
-  background-color: #4199fe;
+  background-color: var(--main-color);
   height: 100%;
 }
