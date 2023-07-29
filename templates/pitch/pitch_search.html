@@ -1,17 +1,15 @@
 {% extends "base_generic.html" %}
 {% load static %}
-{% load bootstrap5 %}
-{% bootstrap_css %}
 {% load i18n %}
-{% bootstrap_javascript %}
 <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-
 {% block content %}
   <div class="container">
-      {% include 'pitch/search_bar.html' %}
+    {% include 'pitch/search_bar.html' %}
   </div>
   <div class="container mt-5 pitch_lists">
-    <h1 class="mb-4">{% trans "List Pitch" %}</h1>
+    <h1 class="mb-4">
+      {% trans "List Pitch" %}
+    </h1>
     {% if results %}
       <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for pitch in results %}
@@ -19,7 +17,7 @@
         {% endfor %}
       </div>
     {% else %}
-    <div class="no_result">
+      <div class="no_result">
         <p>NO PITCH FOUND</p>
         <span>There are no pitches that match your current filters. Try removing some of them to get better results.</span>
       </div>
