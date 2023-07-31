@@ -69,7 +69,6 @@ INSTALLED_APPS = [
     "bootstrap_datepicker_plus",
     "bootstrap5",
     "compressor",
-    "fontawesomefree",
 ]
 
 MIDDLEWARE = [
@@ -151,7 +150,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles/"
 MEDIA_ROOT = BASE_DIR / "media/"
-MEDIA_URL = "/uploads/"
+MEDIA_URL = "/media/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -178,6 +177,4 @@ DEFAULT_FROM_EMAIL = os.getenv("MAIL")
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/uploads/"
 HOST = "http://localhost:8000" if IS_PRODUCT else "http://localhost:8000"

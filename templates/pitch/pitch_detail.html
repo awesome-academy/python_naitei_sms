@@ -1,61 +1,98 @@
 {% extends "base_generic.html" %}
 {% load i18n %}
 {% load bootstrap5 %}
-
 {% block content %}
-{{ form.media }}
-<div>
-  <div class="row d-flex justify-content-center pt-4">
-    <div class="col-7 ">
-      {% if images.count > 0 %}
-      {% include "carousel_banner.html" with images=images %}
-      {% endif %}
-    </div>
-    <div class="col-4 ">
-      <div class="detail_card shadow">
-        <div class="detail_card_body">
-          <h1 class="pt-4">
-            {% trans "Title" %}: {{ pitch.title }}
-          </h1>
-          <div class="rating">
-            <p> rating stars</p>
-          </div>
-          <h3 class="card-title">{% trans "Booking" %}</h3>
-          {% if form %}
-          <form action="" method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="d-flex justify-content-center">
-              <input type="submit" class="btn btn-primary mt-3" value="{% trans 'Submit' %}">
+  {{ form.media }}
+  <div class="p-0 m-0 d-flex justify-content-center ">
+    <div class="col-11 d-flex flex-column">
+      <row class="pt-4 d-flex flex-row">
+      <div class="col-7 p-0">
+        {% if images.count > 0 %}
+          {% include "carousel_banner.html" with images=images %}
+        {% endif %}
+      </div>
+      {% include 'component/loading_modal.html' %}
+      <div class="col-5">
+        <div class="detail_card  shadow box-order">
+          <div class="detail_card_body">
+            <div>
+              <h4 class="pb-0 mb-0">
+                {% trans "Title" %}: {{ pitch.title }}
+              </h4>
+              <div>rating stars</div>
             </div>
-          </form>
-          {% endif %}
+            {% if form %}
+              <div class="pl-4">
+                <form action="" method="post">
+                  {% csrf_token %}
+                  {% for field in form %}
+                    <div class="pt-2">
+                      <strong>{{ field.label_tag }}</strong>
+                      <div>{{ field }}</div>
+                    </div>
+                    <div class="errorlist text-danger font-i pt-1 fs-14">
+                      {% if field.errors %}
+                        {% for error in field.errors %}
+                          <div>{{ error }}</div>
+                        {% endfor %}
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                  <div class="d-flex">
+                    <input type="submit"
+                           class="btn btn-primary mt-3 bg-blue"
+                           data-bs-toggle="modal"
+                           data-bs-target="#loading_modal"
+                           value="{% trans 'Submit' %}">
+                  </div>
+                </form>
+              </div>
+            {% endif %}
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="row d-flex justify-content-center ">
-    <div class="col-11 detail_card shadow mb-3">
-      <div class="detail_card_body">
-        <h3 class="card-title">{% trans "Detail" %}</h3>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>{% trans "Address" %}:</strong> {{ pitch.address }}</li>
-          <li class="list-group-item"><strong>{% trans "Size" %}:</strong> {{ pitch.get_label_size }}</li>
-          <li class="list-group-item"><strong>{% trans "Surface" %}:</strong> {{ pitch.get_label_grass }}</li>
-        </ul>
-      </div>
-    </div>
-    <div class="col-11 detail_card shadow mb-3">
-      <div class="detail_card_body">
-        <h3 class="card-title">{% trans "Description" %}</h3>
-        <p class="card-text">{{ pitch.description }}</p>
-      </div>
-    </div>
-    <div class="col-11 detail_card shadow mb-3">
+      </row>
+      <div class="col-12 detail_card shadow mt-4">
         <div class="detail_card_body">
-          <h3 class="card-title">{% trans "COMMENT" %}</h3>
+          <h3 class="card-title pt-3">
+            {% trans "Detail" %}
+          </h3>
+          <div class="d-flex flex-row">
+            <ul class="col-4 list-group">
+              <li class="list-group-item">
+                <strong>{% trans "Address" %}:</strong> {{ pitch.address }}
+              </li>
+              <li class="list-group-item">
+                <strong>{% trans "Size" %}:</strong> {{ pitch.get_label_size }}
+              </li>
+              <li class="list-group-item">
+                <strong>{% trans "Surface" %}:</strong> {{ pitch.get_label_grass }}
+              </li>
+            </ul>
+            <ul class="col-4 list-group">
+              <li class="list-group-item">
+                <strong>{% trans "Phone" %}:</strong> {{ pitch.phone }}
+              </li>
+              <li class="list-group-item">
+                <strong>{% trans "Price" %}:</strong> {{ pitch.price }}
+              </li>
+            </ul>
+          </div>
+          <div class="pb-4 pt-2">
+            <strong>Mô tả chi tiết</strong>
+            <p class="card-text">
+              {{ pitch.description }}
+            </p>
+          </div>
         </div>
+      </div>
+      <div class="col-12 detail_card shadow mt-4">
+        <div class="detail_card_body">
+          <h3 class="card-title">
+            {% trans "COMMENT" %}
+          </h3>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 {% endblock content %}

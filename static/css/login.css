@@ -70,7 +70,8 @@
   background-color: white;
   box-shadow: 2px 2px 2px 2px #dfdfdf;
 }
-.btn {
+
+.button_login {
   border-radius: 10px;
   width: 100px;
   border: none;
@@ -80,7 +81,7 @@
   height: 40px;
 }
 
-.login_btn{
+.login_btn {
   font-style: italic;
   text-align: center;
 }
