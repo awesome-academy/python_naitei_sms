@@ -4,7 +4,8 @@ from pitch.constant import SIZE, SURFACE_GRASS, STATUS_ORDER
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.urls import reverse
 from django.utils import timezone
-
+from django.contrib import messages
+from django.shortcuts import redirect
 # Create your models here.
 
 
@@ -77,6 +78,15 @@ class Pitch(models.Model):
             if size[0] == self.size:
                 return size[1]
         return ""
+
+    def has_pending_or_future_orders(self):
+        return self.order_set.filter(status__in=['o']).exists()
+
+    def delete(self, *args, **kwargs):
+        if self.has_pending_or_future_orders():
+            messages.error(None, "Cannot delete this pitch because there are pending or confirmed orders in the future.")
+        super(Pitch, self).delete(*args, **kwargs)
+
 
 
 class Order(models.Model):

@@ -1,6 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from .models import Voucher, Pitch, Order, Comment, Image
-
+from .models import Pitch
 
 class ImageInline(admin.TabularInline):
     model = Image
@@ -21,6 +21,14 @@ class PitchAdmin(admin.ModelAdmin):
     inlines = [ImageInline]
     list_filter = ("size", "surface", "price")
 
+    def has_pending_or_future_orders(self, obj):
+        return obj.order_set.filter(status__in=['o']).exists()
+
+    def delete_model(self, request, obj):
+        if obj.has_pending_or_future_orders():
+            messages.error(request, "Cannot delete this pitch because there are pending or future orders associated with it.")
+        else:
+            super().delete_model(request, obj)
 
 # Register the Admin classes for Book using the decorator
 
