@@ -79,7 +79,8 @@
   box-shadow: 2px 2px 2px 2px #dfdfdf;
   height: 40px;
 }
-.login_btn {
+
+.login_btn{
   font-style: italic;
   text-align: center;
 }

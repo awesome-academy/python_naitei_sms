@@ -1,0 +1,35 @@
+ .wrap-input-form input {
+  border: none !important;
+  outline: none!important;
+  box-shadow: none!important;
+ }
+
+.wrap-input-form {
+  border: 1px solid gray;
+  flex-grow: 1!important;
+}
+
+.wrap-input-form i{
+  color: gray;
+  padding-right: 4px;
+}
+
+.text-search-input input {
+  flex-grow: 1;
+}
+.form-select{
+  border-radius: none!important;
+  border: none!important;
+}
+.button-search {
+  height: 100%;
+  width: 100%;
+  border: none!important;
+  outline: none!important;
+  background-color: dodgerblue;
+  color: white;
+  font-weight: bold;
+}
+.button-search:hover {
+  background-color: rgb(62, 152, 241);
+}
