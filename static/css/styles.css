@@ -4,6 +4,7 @@
   --pink-color: #f16983;
   --orange-color: #ffc107;
   --button-color: #008000;
+  --gradient-color: #f5df19;
 }
 
 .sidebar-nav {
@@ -86,9 +87,7 @@
   background-color: transparent !important;
   border-radius: 20px !important;
 }
-.pitch_lists {
-  margin: 0 40px;
-}
+
 .pitch_lists h1 {
   font-weight: bold;
   color: var(--button-color);
@@ -137,15 +136,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 265.7px;
-}
-
-.col-6 {
-  padding: 0;
-  width: 265.7px;
-}
-.row {
-  margin-bottom: 5px;
 }
 
 .bg-transparent {
@@ -158,13 +148,6 @@
 .modal {
   background-color: transprent !important;
   border-radius: 20px !important;
-}
-.pitch_lists {
-  margin: 0 40px;
-}
-.pitch_lists h1 {
-  font-weight: bold;
-  color: #008000;
 }
 
 .card {
@@ -218,12 +201,6 @@
   max-width: 265.7px;
 }
 
-.col-5 {
-  padding-right: 0;
-}
-.col-7 {
-  padding-left: 0;
-}
 .row {
   margin-bottom: 5px;
 }

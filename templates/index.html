@@ -1,4 +1,76 @@
 {% extends "base_generic.html" %}
+{% load i18n %}
+{% load static %}
 {% block content %}
-  <div>{{ title }}</div>
+  <div class="col-12 p-0">
+    <div class="box-banner">
+      <div id="carouselExampleAutoplaying"
+           class="carousel slide carousel-fade bg-carousel p-0 col-12"
+           data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item image-banner  active"
+               style="background-image: linear-gradient(#33333320 70%, #f5df19), url({% static 'image/image-1.jpeg' %})">
+          </div>
+          <div class="carousel-item image-banner"
+               style="background-image: linear-gradient(#33333320 70%, #f5df19), url({% static 'image/image-2.jpeg' %})">
+          </div>
+          <div class="carousel-item image-banner"
+               style="background-image: linear-gradient(#33333320 70%, #f5df19 ), url({% static 'image/image-3.jpeg' %})">
+          </div>
+          <div class="carousel-item image-banner"
+               style="background-image: linear-gradient(#33333320 70%, #f5df19), url({% static 'image/image-5.jpeg' %})">
+          </div>
+        </div>
+      </div>
+      <div class="content-banner">
+        <div class="text-banner pt-xl-5 d-flex flex-column justify-content-center">
+          <h2 class="section-heading">
+            Pitch App
+          </h2>
+          <div class="content-text">
+            <p>
+              <i>{% trans "Nothing beats the thrill of playing soccer on a quality field. That's why we created a website that lets you book a soccer field anytime, anywhere. No hassle, no hidden fees, just pure soccer fun." %}
+              </i>
+            </p>
+          </div>
+          <div class="content-text ">
+            <div class="d-flex flex-column">
+              <p>
+                {% trans "If you're looking for the perfect pitch, look it up at the Pitch App." %}
+              </p>
+              <p>
+                <a href="#card-pitch" class="custom-icon-arrow">↓</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="card-pitch" class="pb-4">
+    <div class="col-3 text-card-pitch">
+      <p>
+        <i>
+          {% trans "Don't let the lack of a football field stop you from enjoying the beautiful game. Pitch App connects you with hundreds of football fields across the country." %}
+        </i>
+      </p>
+    </div>
+    <div class="col-9">
+      <div class="container m-0 p-0">
+        {% if pitch_list %}
+          <div class="row row-cols-md-3 card-home">
+            {% for pitch in pitch_list %}
+              {% include 'pitch/pitch_card.html' %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>
+            {% trans "There are no pitch in the system." %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</div>
 {% endblock %}

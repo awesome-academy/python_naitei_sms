@@ -6,33 +6,57 @@
 <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
 <div class="col">
   <div class="card-wrapper">
-            <div class="card h-100 ">
-              <img src="{{ pitch.banner }}" class="card-img-top" alt="Image" height="200" width="100">
-              <div class="card-body">
-                <h5 class="card-title"><strong>{{ pitch.title }}</strong></h5>
-                <p class="card-text">{{ pitch.description }}</p>
-              </div>
-              <div class="row d-flex justify-content-center" >
-                <div class="col-5">
-                  <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Address:</strong></li>
-                    <li class="list-group-item"><strong>Rent cost:</strong></li>
-                    <li class="list-group-item"><strong>Pitch size:</strong></li>
-                    <li class="list-group-item"><strong>Pitch surface:</strong></li>
-                  </ul>
-                </div>
-                <div class="col-7 ">
-                  <ul class="list-group list-group-flush">
-                    <li class="list-group-item">{{ pitch.address }}</li>
-                    <li class="list-group-item">{{ pitch.price }}</li>
-                    <li class="list-group-item">{{ pitch.size }}</li>
-                    <li class="list-group-item">{{ pitch.surface }}</li>
-                  </ul>
-                </div>
-              </div>
-              <div class="card-body">
-                <a href="{{ pitch.get_absolute_url }}" class="card-link">{% trans "Detail" %}</a>
-              </div>
-            </div>
+    <div class="card h-100 ">
+      <img src="{{ pitch.banner }}"
+           class="card-img-top"
+           alt="Image"
+           height="200"
+           width="100">
+      <div class="card-body">
+        <h5 class="card-title">
+          <strong>{{ pitch.title }}</strong>
+        </h5>
+        <p class="card-text">
+          {{ pitch.description }}
+        </p>
+      </div>
+      <div class="row d-flex justify-content-center">
+        <div class="col-5">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <strong>Address:</strong>
+            </li>
+            <li class="list-group-item">
+              <strong>Rent cost:</strong>
+            </li>
+            <li class="list-group-item">
+              <strong>Pitch size:</strong>
+            </li>
+            <li class="list-group-item">
+              <strong>Pitch surface:</strong>
+            </li>
+          </ul>
+        </div>
+        <div class="col-7 ">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              {{ pitch.address }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.price }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.size }}
+            </li>
+            <li class="list-group-item">
+              {{ pitch.surface }}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-body">
+        <a href="{{ pitch.get_absolute_url }}" class="card-link">{% trans "Detail" %}</a>
+      </div>
+    </div>
   </div>
 </div>

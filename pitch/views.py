@@ -5,6 +5,7 @@ from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
 from pitch.models import Pitch, Order
+from django.db.models import Count
 from django.http import Http404, HttpResponseRedirect
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
@@ -22,31 +23,21 @@ from .forms import SearchForm
 
 # Create your views here.
 def index(request):
-    context = {"title": gettext("Home Page")}
+    pitches = (
+        Pitch.objects.all()
+        .annotate(num_orders=Count("order", filter=Q(order__status="c")))
+        .order_by("-num_orders")[:3]
+        .prefetch_related("image")
+    )
+    for pitch in pitches:
+        if pitch.image.all().exists():
+            pitch.banner = pitch.image.all()[0].image.url
+        else:
+            pitch.banner = "/media/uploads/default-image.jpg"
+        pitch.surface = pitch.get_label_grass()
+        pitch.size = pitch.get_label_size()
+    context = {"pitch_list": pitches}
     return render(request, "index.html", context=context)
-
-
-class PitchListView(generic.ListView):
-    model = Pitch
-    paginate_by = 10
-
-    def get_queryset(self):
-        return Pitch.objects.all()
-
-    def get_context_data(self, **kwargs):
-        context = super(PitchListView, self).get_context_data(**kwargs)
-        pitches = context["pitch_list"]
-        for pitch in pitches:
-            if pitch.image.all().exists():
-                pitch.banner = pitch.image.all()[0].image.url
-            else:
-                pitch.banner = "/uploads/uploads/default-image.jpg"
-            pitch.surface = pitch.get_label_grass()
-            pitch.size = pitch.get_label_size()
-
-        form = SearchForm(self.request.GET)
-        context = {"pitch_list" : pitches, "form":form}
-        return context
 
 
 @login_required
@@ -172,7 +163,7 @@ def search_view(request):
     price = request.GET.get("price")
     size = request.GET.get("size")
     surface = request.GET.get("surface")
-    results = Pitch.objects.all()  # Initialize results with all pitches
+    results = Pitch.objects.all().prefetch_related("image")
     ask = [query, address, price, size, surface]
     if query:
         results = results.filter(
@@ -189,11 +180,11 @@ def search_view(request):
         results = results.filter(surface=surface)
 
     for pitch in results:
-            if pitch.image.all().exists():
-                pitch.banner = pitch.image.all()[0].image.url
-            else:
-                pitch.banner = "/uploads/uploads/default-image.jpg"
-            pitch.surface = pitch.get_label_grass()
-            pitch.size = pitch.get_label_size()
+        if pitch.image.all().exists():
+            pitch.banner = pitch.image.all()[0].image.url
+        else:
+            pitch.banner = "/media/uploads/default-image.jpg"
+        pitch.surface = pitch.get_label_grass()
+        pitch.size = pitch.get_label_size()
     context = {"query": ask, "results": results, "form": form}
     return render(request, "pitch/pitch_search.html", context)
