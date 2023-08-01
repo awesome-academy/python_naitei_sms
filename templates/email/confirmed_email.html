@@ -1,11 +1,11 @@
 {% extends 'email/verify_email_signup.html' %}
 {% load i18n %}
 {% block title %}
-  <title>{% trans "You canceled an order from Pitch App" %}</title>
+  <title>{% trans "Your order from Pitch App has been CONFIRMED" %}</title>
 {% endblock title %}
 {% block header %}
   <h1>
-    {% trans "You canceled an order from Pitch App" %}
+    {% trans "Your order from Pitch App has been CONFIRMED" %}
   </h1>
 {% endblock header %}
 {% block content %}
@@ -14,7 +14,7 @@
   </p>
   <div>
     <p>
-      {% trans "Order information is CANCELED: " %}
+      {% trans "Order information is CONFIRMED: " %}
     </p>
     <div class="pl-8">
       <div class="pt-4">
