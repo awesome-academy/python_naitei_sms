@@ -143,7 +143,7 @@ class SearchForm(forms.Form):
         max_length=100,
         required=False,
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": _("Enter price")}
+            attrs={"class": "form-control", "placeholder": _("Enter address")}
         ),
     )
     price = forms.DecimalField(
@@ -152,6 +152,6 @@ class SearchForm(forms.Form):
         decimal_places=2,
         required=False,
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": _("Enter address")}
+            attrs={"class": "form-control", "placeholder": _("Enter price")}
         ),
     )

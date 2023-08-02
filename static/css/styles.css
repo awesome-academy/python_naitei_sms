@@ -270,3 +270,7 @@
   border-radius: 50%;
   color: white;
 }
+
+.pagination {
+  padding-left: 20px !important;
+}

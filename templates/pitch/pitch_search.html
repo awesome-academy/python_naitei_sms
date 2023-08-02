@@ -10,9 +10,9 @@
     <h1 class="mb-4">
       {% trans "List Pitch" %}
     </h1>
-    {% if results %}
+    {% if page_obj %}
       <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for pitch in results %}
+        {% for pitch in page_obj %}
           {% include 'pitch/pitch_card.html' %}
         {% endfor %}
       </div>
