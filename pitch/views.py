@@ -18,6 +18,7 @@ from project1.settings import HOST
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import SearchForm
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -169,21 +170,35 @@ def search_view(request):
     price = request.GET.get("price")
     size = request.GET.get("size")
     surface = request.GET.get("surface")
-    results = Pitch.objects.all().prefetch_related("image")
+    results = []
+    # results = Pitch.objects.all().prefetch_related("image")
     ask = [query, address, price, size, surface]
-    if query:
-        results = results.filter(
-            Q(title__startswith=query)
-            | Q(title__iregex=r"\b{}\w*\b".format(re.escape(query)))
-        )
-    if address:
-        results = results.filter(address__icontains=query)
-    if price:
-        results = results.filter(price=price)
-    if size:
-        results = results.filter(size=size)
+    queryFilter = ""
     if surface:
-        results = results.filter(surface=surface)
+        queryFilter += "surface = '%s'" % surface
+    if size:
+        if queryFilter != "":
+            queryFilter += " and "
+        queryFilter += "size = '%s'" % size
+    if price:
+        if queryFilter != "":
+            queryFilter += " and "
+        queryFilter += " price <= %s" % price
+    if address:
+        if queryFilter != "":
+            queryFilter += " and "
+        queryFilter += "address = '%s'" % address
+    if query:
+        if queryFilter != "":
+            queryFilter += " and "
+        queryFilter += "MATCH(title,description) AGAINST('%s') > 0.01 " % query
+
+    if len(queryFilter) > 0:
+        queryFilter = "SELECT * FROM pitches WHERE " + queryFilter
+    else:
+        queryFilter = "SELECT * FROM pitches "
+
+    results = Pitch.objects.raw(queryFilter).prefetch_related("image")
 
     for pitch in results:
         if pitch.image.all().exists():
@@ -192,5 +207,16 @@ def search_view(request):
             pitch.banner = "/media/uploads/default-image.jpg"
         pitch.surface = pitch.get_label_grass()
         pitch.size = pitch.get_label_size()
-    context = {"query": ask, "results": results, "form": form}
+    paginator = Paginator(results, 10)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "query": ask,
+        "form": form,
+        "page_obj": page_obj,
+        "is_paginated": True,
+    }
+
     return render(request, "pitch/pitch_search.html", context)
