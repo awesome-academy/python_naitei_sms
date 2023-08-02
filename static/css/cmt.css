@@ -1,0 +1,90 @@
+.star-rating {
+  display:flex;
+  font-size:1.5em;
+  justify-content:space-around;
+  padding:0 .2em;
+  text-align:center;
+  width:5em;
+  flex-direction: row-reverse;
+  margin: 0 45  px;
+}
+
+.star-rating input {
+  display:none;
+}
+
+.star-rating label {
+  color:#ccc;
+  cursor:pointer;
+}
+
+.star-rating :checked ~ label {
+  color:#f90;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color:#fc0;
+}
+
+.star-rating-readonly .star {
+  color: #ccc;
+  pointer-events: none;
+}
+
+.star-rating .star {
+  color: #ccc;
+  cursor: pointer;
+}
+
+.star-rating .star.filled {
+  color: #f90;
+}
+
+.icon-comment {
+  font-style: normal!important;
+  font-weight: bold;
+  padding-right: 20px;
+  cursor: pointer;
+}
+.box-icon-update {
+  position: relative;
+
+}
+
+.box-update-comment {
+  display: none;
+  background-color: white;
+  height: fit-content;
+  width: fit-content;
+  border-radius: 10px!important;
+  z-index: 10;
+  position: absolute;
+  left: -90px;
+}
+.box-update-comment button{
+  border: none;
+  border-radius: 10px;
+  box-shadow: 2px 2px 2px 2px #dfdfdf;
+  background-color: white;
+}
+
+.box-input-update {
+  display: none;
+}
+.update_cross_btn{
+  border: 1px solid gray;
+}
+.update_cross_btn button{
+  border: none;
+}
+.update_comment input{
+  border-radius: none;
+}
+.custom-comment-input input, textarea{
+  width: 100%!important;
+  height: 70px!important;
+}
+.booking_box{
+  width: fit-content;
+}

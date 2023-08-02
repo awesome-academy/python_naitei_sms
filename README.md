@@ -10,6 +10,10 @@ Running database migrations
 Seed data by command
 
 - python3 manage.py loaddata seeder.json
+- create fulltext search
+- run command in mysql
+ALTER TABLE pitches
+ADD FULLTEXT(title, description);
 
 ################################
 Running the website
@@ -34,6 +38,7 @@ tao i18n
 
 ############################
 Run test
+- Tạo file staticfiles nếu không có //python3 manage.py collectstatic
 python3 manage.py test
 python3 manage.py test --verbosity 2 // chi tiet voi 0 1 2 3
 python3 manage.py collectstatic// chay khi gap loi ValueError: Missing staticfiles manifest entry...

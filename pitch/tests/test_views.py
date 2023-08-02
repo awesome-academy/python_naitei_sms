@@ -10,7 +10,7 @@ from account.models import EmailVerify
 from django.core.exceptions import ObjectDoesNotExist
 import uuid
 from pitch.models import Order
-
+from django.db import connections
 
 class HomeViewTest(TestCase):
     @classmethod
@@ -39,6 +39,9 @@ class SearchViewTest(TestCase):
             PitchFactory(size="3") if x < 10 else PitchFactory(surface="m")
             for x in range(0, 20)
         ]
+        cursor = connections["default"].cursor()
+        cursor.execute("ALTER TABLE pitches ADD FULLTEXT(title, description)")
+        cursor.close()
 
     def test_redirect(self):
         response = self.client.get(reverse("search"))
@@ -52,29 +55,29 @@ class SearchViewTest(TestCase):
     def test_number_pitch(self):
         response = self.client.get(reverse("search"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["results"]), 20)
+        self.assertEqual(len(response.context["page_obj"]), 10)
 
     def test_search_by_size(self):
         response = self.client.get(reverse("search"), QUERY_STRING="size=3")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["results"]), 10)
+        self.assertEqual(len(response.context["page_obj"]), 10)
 
     def test_search_by_surface(self):
         response = self.client.get(reverse("search"), QUERY_STRING="surface=m")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["results"]), 10)
+        self.assertEqual(len(response.context["page_obj"]), 10)
 
     def test_search_by_desc(self):
         response = self.client.get(
             reverse("search"), QUERY_STRING="q=%s" % self.pitches[0].title
         )
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(len(response.context["results"]), 1)
+        self.assertGreaterEqual(len(response.context["page_obj"]), 1)
 
     def test_search_by_size_and_surface(self):
         response = self.client.get(reverse("search"), QUERY_STRING="surface=m&size=3")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["results"]), 0)
+        self.assertEqual(len(response.context["page_obj"]), 0)
 
 
 class DetailPitchViewTest(TestCase):

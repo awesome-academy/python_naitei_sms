@@ -16,36 +16,48 @@
         <div class="detail_card  shadow box-order">
           <div class="detail_card_body">
             <div>
-              <h4 class="pb-0 mb-0">
+              <h4 class="pb-0 mb-0 pt-4 d-flex justify-content-center">
                 {% trans "Title" %}: {{ pitch.title }}
               </h4>
-              <div>rating stars</div>
+              <div class="d-flex justify-content-center">
+                <div class="star-rating  {% if readonly %}star-rating-readonly{% endif %} ">
+                  <span class="star {% if pitch.avg_rating >= 5 %}filled{% endif %}" data-value="5">&#9733;</span>
+                  <span class="star {% if pitch.avg_rating >= 4 %}filled{% endif %}" data-value="4">&#9733;</span>
+                  <span class="star {% if pitch.avg_rating >= 3 %}filled{% endif %}" data-value="3">&#9733;</span>
+                  <span class="star {% if pitch.avg_rating >= 2 %}filled{% endif %}" data-value="2">&#9733;</span>
+                  <span class="star {% if pitch.avg_rating >= 1 %}filled{% endif %}" data-value="1">&#9733;</span>
+                </div>
+              </div>
+
             </div>
             {% if form %}
-              <div class="pl-4">
-                <form action="" method="post">
-                  {% csrf_token %}
-                  {% for field in form %}
-                    <div class="pt-2">
-                      <strong>{{ field.label_tag }}</strong>
-                      <div>{{ field }}</div>
+              <div class="pl-4 d-flex justify-content-center">
+                <div class="booking_box">
+                  <form action="" method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                      <div class="pt-2">
+                        <strong>{{ field.label_tag }}</strong>
+                        <div>{{ field }}</div>
+                      </div>
+                      <div class="errorlist text-danger font-i pt-1 fs-14">
+                        {% if field.errors %}
+                          {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                          {% endfor %}
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-center">
+                      <input type="submit"
+                            class="btn btn-primary mt-3 bg-blue"
+                            data-bs-toggle="modal"
+                            data-bs-target="#loading_modal"
+                            value="{% trans 'Submit' %}"
+                            name="submit_order">
                     </div>
-                    <div class="errorlist text-danger font-i pt-1 fs-14">
-                      {% if field.errors %}
-                        {% for error in field.errors %}
-                          <div>{{ error }}</div>
-                        {% endfor %}
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                  <div class="d-flex">
-                    <input type="submit"
-                           class="btn btn-primary mt-3 bg-blue"
-                           data-bs-toggle="modal"
-                           data-bs-target="#loading_modal"
-                           value="{% trans 'Submit' %}">
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             {% endif %}
           </div>
@@ -87,10 +99,11 @@
         </div>
       </div>
       <div class="col-12 detail_card shadow mt-4">
-        <div class="detail_card_body">
-          <h3 class="card-title">
-            {% trans "COMMENT" %}
-          </h3>
+        <div class="detail_card_body mt-4">
+          <h3 class="card-title">{% trans "COMMENT" %}</h3>
+            <div class="comt_box">
+                 {% include 'pitch/pitch_comment.html' with comment_form=comment_form%}
+            </div>
         </div>
       </div>
     </div>
