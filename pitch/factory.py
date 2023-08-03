@@ -2,7 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 from pitch.custom_fnc import convert_timedelta
-from pitch.models import Pitch, Order
+from pitch.models import Pitch, Order, Voucher
 from django.utils import timezone
 import datetime
 
@@ -44,3 +44,13 @@ class OrderFactory(DjangoModelFactory):
     cost = factory.LazyAttribute(
         lambda o: o.pitch.price * convert_timedelta(o.time_end - o.time_start)
     )
+
+
+class VoucherFactory(DjangoModelFactory):
+    class Meta:
+        model = Voucher
+
+    name = factory.Faker("name")
+    min_cost = 2000000
+    discount = 100000
+    count = 100

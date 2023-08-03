@@ -1,7 +1,5 @@
 from django.test import TestCase
-from pitch.models import Pitch, Order
 from django.test import Client
-from django.contrib.auth.models import User
 from django.urls import reverse_lazy, reverse
 from pitch.factory import PitchFactory, UserFactory, OrderFactory
 from django.utils import timezone

@@ -8,12 +8,7 @@ from pitch.custom_fnc import convert_timedelta
 from django.utils.translation import gettext as _
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from django.contrib import admin
 from django.core.exceptions import ValidationError
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from .models import Pitch
 
 
 class RentalPitchModelForm(ModelForm):
@@ -30,7 +25,10 @@ class RentalPitchModelForm(ModelForm):
 
     def clean_time_end(self):
         pitch = self.pitch
-        start = self.cleaned_data["time_start"]
+        try:
+            start = self.cleaned_data["time_start"]
+        except KeyError:
+            raise ValidationError(_("Invalid time start values."))
         end = self.cleaned_data["time_end"]
         ordered = (
             Order.objects.filter(pitch=pitch, time_start__lt=end, time_end__gte=end)
