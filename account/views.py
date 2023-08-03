@@ -10,12 +10,15 @@ from account.mail import send_mail_custom
 from project1.settings import HOST
 from django.utils.translation import gettext
 from django.views.decorators.csrf import csrf_protect
-from django.db import DatabaseError, IntegrityError, transaction
+from django.db import DatabaseError, transaction
 
 
 @csrf_protect
 def sign_up(request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("index"))
+
+    elif request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
