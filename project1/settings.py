@@ -174,6 +174,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("MAIL")
 EMAIL_HOST_PASSWORD = os.getenv("PASS")
 DEFAULT_FROM_EMAIL = os.getenv("MAIL")
+EMAIL_FILE_PATH = "/tmp/app-messages"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

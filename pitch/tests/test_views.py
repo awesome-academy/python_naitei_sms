@@ -1,11 +1,15 @@
 from django.test import TestCase
-from pitch.models import Pitch, Order
 from django.test import Client
-from django.contrib.auth.models import User
 from django.urls import reverse_lazy, reverse
 from pitch.factory import PitchFactory, UserFactory, OrderFactory
 from django.utils import timezone
 import datetime
+from django.core import mail
+from django.contrib.auth.models import User
+from account.models import EmailVerify
+from django.core.exceptions import ObjectDoesNotExist
+import uuid
+from pitch.models import Order
 
 
 class HomeViewTest(TestCase):
@@ -98,6 +102,23 @@ class DetailPitchViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pitch/pitch_detail.html")
 
+    def test_order_pitch(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        start = timezone.now() + datetime.timedelta(hours=40)
+        end = start + datetime.timedelta(hours=1)
+        response = self.client.post(
+            reverse("pitch-detail", kwargs={"pk": self.pitches[0].id}),
+            data={"time_start": start, "time_end": end},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        order = Order.objects.filter(
+            renter=self.user, pitch=self.pitches[0], time_start=start
+        )
+        self.assertTrue(order.exists())
+        self.assertEqual(order[0].status, "o")
+        self.assertEqual(len(mail.outbox), 1)
+
 
 class ListMyOrderViewTest(TestCase):
     @classmethod
@@ -178,3 +199,104 @@ class DetailOrderViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["order"].pitch.price, self.pitch.price)
+
+    def test_cancel_order_pitch(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("order-detail", kwargs={"pk": self.orders[0].id}),
+            data={"status": "o"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(Order.objects.get(pk=self.orders[0].id).status, "d")
+
+
+class RegisterViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.client = Client()
+
+    def test_logged_in(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.get(reverse("signup"))
+        self.assertRedirects(
+            response,
+            "/pitch/",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+
+    def test_not_login(self):
+        response = self.client.get(reverse("signup"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_send_email(self):
+        username = "user"
+        email = "user@gmail.com"
+        password1 = "admin@123"
+        password2 = "admin@123"
+        response = self.client.post(
+            reverse("signup"),
+            data={
+                "username": username,
+                "email": email,
+                "password1": password1,
+                "password2": password2,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("send-mail-success"),
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user = User.objects.get(email=email)
+        self.assertIsNotNone(user)
+        self.assertEqual(user.is_active, 0)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_verify_email(self):
+        username = "user"
+        email = "user@gmail.com"
+        password1 = "admin@123"
+        password2 = "admin@123"
+        response = self.client.post(
+            reverse("signup"),
+            data={
+                "username": username,
+                "email": email,
+                "password1": password1,
+                "password2": password2,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("send-mail-success"),
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user = User.objects.get(email=email)
+        self.assertIsNotNone(user)
+        token = EmailVerify.objects.get(user=user)
+        response2 = self.client.post(
+            reverse("verify-email", kwargs={"token": token.token}),
+        )
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(User.objects.get(email=email).is_active, 1)
+        self.assertFalse(EmailVerify.objects.filter(user=user).exists())
+
+    def test_token_is_not_exist(self):
+        token = uuid.uuid4()
+        response = self.client.post(
+            reverse("verify-email", kwargs={"token": token}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/verify_email_fail.html")
