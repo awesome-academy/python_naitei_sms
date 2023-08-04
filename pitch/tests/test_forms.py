@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 from pitch.factory import PitchFactory, UserFactory, OrderFactory, VoucherFactory
 import datetime
-from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
+from pitch.forms import RentalPitchModelForm, CancelOrderModelForm, CommentForm
 from account.forms import RegisterForm
 
 
@@ -189,4 +189,33 @@ class RegisterFormTest(TestCase):
                 "password2": password2,
             },
         )
+        self.assertFalse(form.is_valid())
+
+class CommentFormTest(TestCase):
+    def test_comment_form_valid(self):
+        form = CommentForm(data={"comment": "This is a comment.", "rating": 5})
+        self.assertTrue(form.is_valid())
+
+    def test_comment_form_comment_empty(self):
+        form = CommentForm(data={"comment": "", "rating": 5})
+        self.assertFalse(form.is_valid())
+
+    def test_comment_form_rating_empty(self):
+        form = CommentForm(data={"comment": "This is a comment.", "rating": None})
+        self.assertFalse(form.is_valid())
+
+    def test_comment_form_both_fields_empty(self):
+        form = CommentForm(data={"comment": "", "rating": None})
+        self.assertFalse(form.is_valid())
+
+    def test_comment_form_comment_whitespace(self):
+        form = CommentForm(data={"comment": "    ", "rating": 5})
+        self.assertFalse(form.is_valid())
+
+    def test_comment_form_rating_zero(self):
+        form = CommentForm(data={"comment": "This is a comment.", "rating": 0})
+        self.assertFalse(form.is_valid())
+
+    def test_comment_form_rating_out_of_range(self):
+        form = CommentForm(data={"comment": "This is a comment.", "rating": 6})
         self.assertFalse(form.is_valid())
