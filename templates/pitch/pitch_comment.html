@@ -55,6 +55,7 @@
     </div>
     <hr>
   {% endfor %}
+{% endif %}
   <form action="" method="post">
     {% csrf_token %}
     <div class="container row d-flex p-3">
@@ -89,7 +90,7 @@
       </div>
     </div>
   </form>
-{% endif %}
+
 <script>
 
   const showUpdate = (id) => {

@@ -144,6 +144,7 @@ def pitch_detail(request, pk):
 
     with transaction.atomic():
         avg_rating = comments.aggregate(Avg('rating'))['rating__avg']
+        avg_rating = avg_rating if avg_rating is not None else 0
         pitch.avg_rating = avg_rating
         pitch.save()
 
@@ -269,17 +270,3 @@ def search_view(request):
     }
 
     return render(request, "pitch/pitch_search.html", context)
-
-def create_comment(request, pk):
-    pitch = get_object_or_404(Pitch, pk=pk)
-    if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.pitch = pitch
-            comment.renter = request.user
-            comment.save()
-            return redirect('pitch-detail', pk=pk)
-    else:
-        form = CommentForm()
-    return render(request, 'pitch/create_comment.html', {'form': form})

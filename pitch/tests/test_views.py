@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from account.models import EmailVerify
 from django.core.exceptions import ObjectDoesNotExist
 import uuid
-from pitch.models import Order
+from pitch.models import Order, Comment, Pitch
 from django.db import connections
 
 class HomeViewTest(TestCase):
@@ -303,3 +303,36 @@ class RegisterViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "registration/verify_email_fail.html")
+
+class CommentViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(username="testuser", password="testpass")
+        cls.pitch = Pitch.objects.create(title="Test Pitch", size="3", price=100)
+
+    def test_add_comment(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk}),
+            {"submit_comment": True, "comment": "This is a test comment", "rating": 4},
+        )
+        self.assertEqual(response.status_code, 302)  # Should redirect after comment creation
+        self.assertTrue(
+            Comment.objects.filter(
+                pitch=self.pitch, renter=self.user, comment="This is a test comment"
+            ).exists()
+        )
+
+    def test_update_comment(self):
+        comment = Comment.objects.create(
+            pitch=self.pitch, renter=self.user, comment="Initial comment", rating=3
+        )
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk}),
+            {"update_comment": True, "comment_pk": comment.pk, "comment": "Updated comment", "rating": 5},
+        )
+        self.assertEqual(response.status_code, 302)  # Should redirect after comment update
+        comment.refresh_from_db()
+        self.assertEqual(comment.comment, "Updated comment")
+        self.assertEqual(comment.rating, 5)
