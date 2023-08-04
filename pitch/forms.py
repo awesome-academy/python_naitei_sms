@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 from django.core.exceptions import ValidationError
-from pitch.models import Order
+from pitch.models import Order, Comment
 from datetime import timedelta
 from django.utils import timezone
 from pitch.custom_fnc import convert_timedelta
@@ -153,3 +153,25 @@ class SearchForm(forms.Form):
             attrs={"class": "form-control", "placeholder": _("Enter price")}
         ),
     )
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = Comment
+        fields = ["comment", "rating"]
+        labels = {
+            "comment": "Comment",
+            "rating": "Rating",
+        }
+
+    def clean_comment(self):
+        comment = self.cleaned_data["comment"]
+        if not comment:
+            raise ValidationError("Comment field cannot be empty.")
+        return comment
+
+    def clean_rating(self):
+        rating = self.cleaned_data["rating"]
+        if not rating:
+            raise ValidationError("Please select a rating.")
+        return rating

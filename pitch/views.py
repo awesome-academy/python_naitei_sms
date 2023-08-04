@@ -4,8 +4,9 @@ from django.shortcuts import render
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
-from pitch.models import Pitch, Order
+from pitch.models import Pitch, Order, Comment
 from django.db.models import Count
+from django.http import Http404, HttpResponseRedirect
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
 from django.urls import reverse_lazy, reverse
@@ -15,10 +16,12 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from account.mail import send_mail_custom
 from django.utils.translation import gettext_lazy as _
 from project1.settings import HOST
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import SearchForm
 from django.core.paginator import Paginator
+from .forms import SearchForm,CommentForm
+from django.shortcuts import redirect, get_object_or_404
+from django.db import DatabaseError, transaction
 
 
 # Create your views here.
@@ -39,7 +42,7 @@ def index(request):
     context = {"pitch_list": pitches}
     return render(request, "index.html", context=context)
 
-
+@transaction.atomic
 @login_required
 def pitch_detail(request, pk):
     context = {}
@@ -50,49 +53,83 @@ def pitch_detail(request, pk):
     context["pitch"] = pitch
     start_rental_date = datetime.datetime.now() + datetime.timedelta(days=1)
     context["images"] = context["pitch"].image.all()
+
+    comments = Comment.objects.filter(pitch=pitch)
+    context['comments'] = comments
+
     if request.method == "POST":
         form = RentalPitchModelForm(request.POST, pitch=pitch)
-        if form.is_valid():
-            time_start = form.cleaned_data["time_start"]
-            time_end = form.cleaned_data["time_end"]
-            voucher = form.cleaned_data["voucher"]
-            email = request.user.email
-            username = request.user.username
-
-            cost = convert_timedelta(time_end - time_start) * (pitch.price)
-            if voucher:
-                cost -= voucher.discount
-            order = Order.objects.create(
-                pitch=pitch,
-                time_start=time_start,
-                time_end=time_end,
-                renter=request.user,
-                price=pitch.price,
-                cost=cost,
-                voucher=voucher,
-            )
-
-            link = HOST + reverse_lazy("order-detail", kwargs={"pk": order.id})
-
-            send_mail_custom(
-                gettext("Notice to order a pitch from Pitch App"),
-                email,
-                None,
-                "email/notify_order_pitch.html",
-                link=link,
-                username=username,
-                time_start=time_start,
-                time_end=time_end,
-                pitch_title=pitch.title,
-                price=pitch.price,
-                cost=cost,
-            )
-
-            return HttpResponseRedirect(
-                reverse_lazy("order-detail", kwargs={"pk": order.id})
-            )
+        if "submit_comment" in request.POST:
+            comment_form = CommentForm(request.POST)
+            print(comment_form.is_valid())
+            if comment_form.is_valid():
+                comment = comment_form.cleaned_data["comment"]
+                rating = comment_form.cleaned_data["rating"]
+                print("content",comment)
+                Comment.objects.create(
+                    renter=request.user,
+                    pitch=pitch,
+                    comment=comment,
+                    rating=rating,
+                )
+                # Redirect to refresh the page after successful comment creation
+                return HttpResponseRedirect(request.path_info)
+            else:
+                # If form is not valid, set the form in context to display the errors
+                context["comment_form"] = comment_form
+        elif "update_comment" in request.POST:
+            comment_pk = request.POST.get("comment_pk")
+            comment = get_object_or_404(Comment, pk=comment_pk)
+            comment_form = CommentForm(request.POST, instance=comment)
+            if comment_form.is_valid():
+                comment_form.save()
+                # Redirect to refresh the page after successful comment update
+                return HttpResponseRedirect(request.path_info)
+            else:
+                # If form is not valid, set the form in context to display the errors
+                context["comment_form"] = comment_form
         else:
-            context["form"] = form
+            if form.is_valid():
+                time_start = form.cleaned_data["time_start"]
+                time_end = form.cleaned_data["time_end"]
+                voucher = form.cleaned_data["voucher"]
+                email = request.user.email
+                username = request.user.username
+
+                cost = convert_timedelta(time_end - time_start) * (pitch.price)
+                if voucher:
+                    cost -= voucher.discount
+                order = Order.objects.create(
+                    pitch=pitch,
+                    time_start=time_start,
+                    time_end=time_end,
+                    renter=request.user,
+                    price=pitch.price,
+                    cost=cost,
+                    voucher=voucher,
+                )
+
+                link = HOST + reverse_lazy("order-detail", kwargs={"pk": order.id})
+
+                send_mail_custom(
+                    gettext("Notice to order a pitch from Pitch App"),
+                    email,
+                    None,
+                    "email/notify_order_pitch.html",
+                    link=link,
+                    username=username,
+                    time_start=time_start,
+                    time_end=time_end,
+                    pitch_title=pitch.title,
+                    price=pitch.price,
+                    cost=cost,
+                )
+
+                return HttpResponseRedirect(
+                    reverse_lazy("order-detail", kwargs={"pk": order.id})
+                )
+            else:
+                context["form"] = form
 
     else:
         context["form"] = RentalPitchModelForm(
@@ -102,6 +139,19 @@ def pitch_detail(request, pk):
             },
             pitch=pitch,
         )
+        context['update_comment_form'] = CommentForm()
+        context["comment_form"] = CommentForm()
+
+    with transaction.atomic():
+        avg_rating = comments.aggregate(Avg('rating'))['rating__avg']
+        pitch.avg_rating = avg_rating
+        pitch.save()
+
+    paginator = Paginator(comments, 3)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context["page_obj"] = page_obj
+    context["is_paginated"] = True
 
     return render(request, "pitch/pitch_detail.html", context=context)
 
@@ -208,7 +258,6 @@ def search_view(request):
         pitch.surface = pitch.get_label_grass()
         pitch.size = pitch.get_label_size()
     paginator = Paginator(results, 10)
-
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -220,3 +269,17 @@ def search_view(request):
     }
 
     return render(request, "pitch/pitch_search.html", context)
+
+def create_comment(request, pk):
+    pitch = get_object_or_404(Pitch, pk=pk)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.pitch = pitch
+            comment.renter = request.user
+            comment.save()
+            return redirect('pitch-detail', pk=pk)
+    else:
+        form = CommentForm()
+    return render(request, 'pitch/create_comment.html', {'form': form})

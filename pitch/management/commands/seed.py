@@ -1,26 +1,27 @@
 import json
-import random
+import random,string
 import numpy as np
 import os
 from django.core.management.base import BaseCommand
 from pitch.models import Pitch
-
+from lorem_text import lorem
 class Command(BaseCommand):
     help = 'Seed dữ liệu cho mô hình Pitch'
 
     def generate_random_phone(self):
         return f'{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}'
-      
+
     def seed_pitches(self, num_pitches=6):
         pitches_data = []
         field_name = ['Anfield', 'Arsenal', 'Ayresome Park', 'Cardiff City', 'Bloomfield Road', 'Boundary Park']
         for i in range(1, num_pitches + 1):
+
             pitch_data = {
                 'model': 'pitch.Pitch',
                 'fields': {
                     'address': f'Address {i}',
                     'title': random.choice(field_name),
-                    'description': f'Description for Pitch {i}',
+                    'description': lorem.words(15),
                     'phone': self.generate_random_phone(),
                     'avg_rating': random.choice(np.arange(0,5,0.5)),
                     'size': random.choice(['1', '2', '3']),
@@ -61,4 +62,3 @@ class Command(BaseCommand):
         # Save all_data to a JSON file
         with open(file_path, 'w') as json_file:
             json.dump(all_data, json_file, indent=2)
-

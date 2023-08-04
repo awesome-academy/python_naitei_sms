@@ -80,7 +80,7 @@ class PitchModelTestCase(TestCase):
 
     def test_object_name(self):
         self.assertEqual(str(self.pitch), self.pitch.title)
-        
+
 class OrderModelTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -108,7 +108,8 @@ class OrderModelTestCase(TestCase):
             price=1000,
             renter=cls.renter,
             voucher=cls.voucher,
-            cost=5000
+            cost=5000,
+            pitch=cls.pitch
         )
 
     def test_attribute(self):
@@ -171,7 +172,7 @@ class CommentModelTestCase(TestCase):
 
     def __str__(self):
         return f"Order {self.pk} - {self.renter.username}"
-        
+
 class ImageModelTestCase(TestCase):
     def setUp(self):
         self.pitch = Pitch.objects.create(
@@ -187,10 +188,9 @@ class ImageModelTestCase(TestCase):
         self.image = Image.objects.create(pitch=self.pitch)
 
     def test_image_default(self):
-        default_image_path = "uploads/default-image.jpg"
-        self.assertEqual(self.image.image.url, "/uploads/default-image.jpg")
+        default_image_path = "/media/default-image.jpg"
+        self.assertEqual(self.image.image.url, default_image_path)
 
     def test_image_upload_to(self):
         expected_path = os.path.join(settings.MEDIA_ROOT, "default-image.jpg")
         self.assertEqual(self.image.image.path, expected_path)
-        

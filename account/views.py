@@ -65,19 +65,12 @@ def send_mail_success(request):
 
 @transaction.atomic
 def verify_email(request, token):
-    if EmailVerify.objects.filter(token=token).exists():
-        userVerify = EmailVerify.objects.get(token=token)
-        user = userVerify.user
-        user.is_active = True
-        try:
-            with transaction.atomic():
-                user.save()
-        except DatabaseError:
-            user.is_active = False
-
-        if user.is_active:
-            userVerify.delete()
-
-        return render(request, "registration/verify_email_success.html")
-    else:
+    try:
+        user_verify = EmailVerify.objects.get(token=token)
+    except EmailVerify.DoesNotExist:
         return render(request, "registration/verify_email_fail.html")
+    user = user_verify.user
+    user.is_active = True
+    user.save()
+    user_verify.delete()
+    return render(request, "registration/verify_email_success.html")
