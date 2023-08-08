@@ -3,13 +3,13 @@ Django Trainee
 ################################
 Running database migrations
 
-- python3 manage.py makemigrations
-- python3 manage.py migrate
+- python manage.py makemigrations
+- python manage.py migrate
 
 #################################
 Seed data by command
 
-- python3 manage.py loaddata seeder.json
+- python manage.py loaddata pitch_and_images_data.json
 - create fulltext search
 - run command in mysql
 ALTER TABLE pitches
@@ -18,7 +18,7 @@ ADD FULLTEXT(title, description);
 ################################
 Running the website
 
-- python3 manage.py runserver
+- python manage.py runserver
   root: 127.0.0.1:8000
 
 ###############################
