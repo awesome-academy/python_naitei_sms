@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, DateTimeField, Form
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 from django.core.exceptions import ValidationError
 from pitch.models import Order, Comment
@@ -154,8 +154,8 @@ class SearchForm(forms.Form):
         ),
     )
 
-class CommentForm(forms.ModelForm):
 
+class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ["comment", "rating"]
@@ -175,3 +175,8 @@ class CommentForm(forms.ModelForm):
         if not rating:
             raise ValidationError("Please select a rating.")
         return rating
+
+
+class FormCustomSearchAdminSite(Form):
+    time_start = DateTimeField(required=False, widget=DateTimePickerInput())
+    time_end = DateTimeField(required=False, widget=DateTimePickerInput())

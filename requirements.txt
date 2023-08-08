@@ -16,3 +16,4 @@ Django-Verify-Email==2.0.3
 python-dotenv==1.0.0
 fontawesomefree==6.4.0
 lorem-text==2.1
+Pillow==10.0.0
