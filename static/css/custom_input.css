@@ -1,0 +1,12 @@
+.wrap-picker-admin input {
+  position: relative;
+}
+
+.wrap-picker-admin .input-group input {
+  width: 100%;
+}
+.wrap-picker-admin .input-group .input-group-addon {
+  position: absolute;
+  right: -45px;
+  top: -3px !important;
+}
