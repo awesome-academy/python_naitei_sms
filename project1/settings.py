@@ -62,7 +62,7 @@ SECURE_HSTS_SECONDS = IS_PRODUCT * 7200
 
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "project1.apps.MyAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

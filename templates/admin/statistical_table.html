@@ -1,0 +1,43 @@
+{% load i18n %}
+<h4>
+  {% trans "Revenue statistics for the month of " %}{{ month }}
+</h4>
+<table class="table table-hover w-100">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">
+        {% trans "Pitch" %}
+      </th>
+      <th scope="col">
+        {% trans "Count Booking" %}
+      </th>
+      <th scope="col">
+        {% trans "Revenue" %}
+      </th>
+      <th scope="col">
+        {% trans "Action" %}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pitch in page_obj %}
+      <tr>
+        <th scope="row">
+          {{ forloop.counter }}
+        </th>
+        <td>
+          <a href="{{ host }}{{ pitch.get_absolute_url }}">{{ pitch.title }}</a>
+        </td>
+        <td>{{ pitch.count }}</td>
+        <td>
+          {% if pitch.revenues %}
+            {{ pitch.revenues }} {% else %} 0 {% endif %}
+          </td>
+          <td>
+            <a href="/" class="viewlink">View</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
