@@ -1,22 +1,30 @@
 {% extends 'email/verify_email_signup.html' %}
 {% load i18n %}
 {% block title %}
-  <title>{% trans "You canceled an order from Pitch App" %}</title>
+  <title>{% trans "The customer has canceled the order from Pitch App" %}</title>
 {% endblock title %}
 {% block header %}
   <h1>
-    {% trans "You canceled an order from Pitch App" %}
+    {% trans "The customer has canceled the order from Pitch App" %}
   </h1>
 {% endblock header %}
+{% block preface %}
+  <p class="pink">
+    {% trans "Hello" %} <strong>{% trans "Admin" %}</strong>
+  </p>
+{% endblock preface %}
 {% block content %}
   <p>
-    {% trans "Thank you for booking the pitch on the Pitch App system." %}
+    {% trans "Pitch App notifies administrators." %}
   </p>
   <div>
     <p>
       {% trans "Order information is CANCELED: " %}
     </p>
     <div class="pl-8">
+      <div class="pt-4">
+        <strong>{% trans "User: " %}</strong> {{ params.username }}
+      </div>
       <div class="pt-4">
         <strong>{% trans "Pitch: " %}</strong> {{ params.pitch_title }}
       </div>

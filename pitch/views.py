@@ -20,8 +20,9 @@ from django.db.models import Q, Avg
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from .forms import SearchForm, CommentForm
-from django.shortcuts import redirect, get_object_or_404
-from django.db import DatabaseError, transaction
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -192,14 +193,15 @@ def order_cancel(request, pk):
     if request.method == "POST":
         form = CancelOrderModelForm(request.POST)
         if form.is_valid():
-            email = request.user.email
+            admins = User.objects.filter(is_superuser=1)
+            emails = list(map(lambda x: x.email, admins))
             username = request.user.username
-            link = HOST + reverse_lazy("order-detail", kwargs={"pk": pk})
+            link = HOST + "/admin/pitch/order/%d/change/" % pk
             order.status = "d"
             order.save()
             send_mail_custom(
-                _("Order cancellation notice from Pitch App"),
-                [email],
+                _("Notice of customer order cancellation from Pitch App"),
+                emails,
                 None,
                 "email/notify_cancel_order.html",
                 link=link,
