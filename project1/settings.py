@@ -1,7 +1,6 @@
 import os
 from django.utils.translation import gettext_lazy as _
 from pathlib import Path
-import logging
 from dotenv import load_dotenv
 import os
 
@@ -19,7 +18,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = not IS_PRODUCT
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": False if DEBUG else True,
     "formatters": {
         "verbose": {
             "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
@@ -31,19 +30,25 @@ LOGGING = {
         "file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": "project1.log",
+            "filename": os.path.join(BASE_DIR, "log/info.log"),
+            "formatter": "verbose",
+        },
+        "file_log": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "log/error.log"),
             "formatter": "verbose",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
+            "handlers": ["file_log"],
             "propagate": True,
             "level": "DEBUG",
         },
-        "MYAPP": {
+        "pitch": {
             "handlers": ["file"],
-            "level": "DEBUG",
+            "level": "INFO",
         },
     },
 }
@@ -69,6 +74,7 @@ INSTALLED_APPS = [
     "bootstrap_datepicker_plus",
     "bootstrap5",
     "compressor",
+    "django_crontab",
 ]
 
 MIDDLEWARE = [
@@ -167,6 +173,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = os.getenv("EMAIL_PORT")
@@ -175,6 +182,8 @@ EMAIL_HOST_USER = os.getenv("MAIL")
 EMAIL_HOST_PASSWORD = os.getenv("PASS")
 DEFAULT_FROM_EMAIL = os.getenv("MAIL")
 EMAIL_FILE_PATH = "/tmp/app-messages"
+
+CRONJOBS = [("*/1 * * * *", "pitch.cron.mail_schedule_job")]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

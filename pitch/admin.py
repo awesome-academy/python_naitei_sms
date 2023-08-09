@@ -234,7 +234,7 @@ class OrderAdmin(admin.ModelAdmin):
                 try:
                     send_mail_custom(
                         gettext("Notice to order a pitch from Pitch App"),
-                        email,
+                        [email],
                         None,
                         "email/confirmed_email.html",
                         link=HOST + reverse_lazy("order-detail", kwargs={"pk": obj.id}),
@@ -257,7 +257,7 @@ class OrderAdmin(admin.ModelAdmin):
                 try:
                     send_mail_custom(
                         gettext("Notice to order a pitch from Pitch App"),
-                        email,
+                        [email],
                         None,
                         "email/canceled_email.html",
                         link=HOST + reverse_lazy("order-detail", kwargs={"pk": obj.id}),
