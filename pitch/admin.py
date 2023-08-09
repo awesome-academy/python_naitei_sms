@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.http import HttpResponse
 from .models import Voucher, Pitch, Order, Comment, Image
 from .models import Pitch
 from account.mail import send_mail_custom
@@ -8,6 +9,8 @@ from django.urls import reverse_lazy
 from datetime import datetime, timedelta
 from django.db.models import Q
 from pitch.forms import FormCustomSearchAdminSite
+from import_export.admin import ExportActionModelAdmin
+import xlwt
 
 
 class ImageInline(admin.TabularInline):
@@ -62,6 +65,59 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    @admin.action(description=gettext("Export as excel"))
+    def export_as_excel(self, request, queryset):
+        response = HttpResponse(content_type="application/ms-excel")
+        name = "OrderList" + datetime.now().strftime("%Y%m%d%H%M%s")
+        response["Content-Disposition"] = 'attachment; filename="%s.xls"' % name
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet("Sheet1")
+
+        row_num = 0
+
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+
+        columns = [
+            "id",
+            "renter",
+            "price",
+            "pitch",
+            "time_start",
+            "time_end",
+            "cost",
+        ]
+
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+        font_style = xlwt.XFStyle()
+
+        for row in queryset:
+            row_num += 1
+            pitch = row.pitch.title + "(%s%s)" % (HOST, row.pitch.get_absolute_url())
+            renter = row.renter.username
+            for col_num in range(len(columns)):
+                if columns[col_num] == "time_start" or columns[col_num] == "time_end":
+                    time = getattr(row, columns[col_num])
+                    ws.write(
+                        row_num, col_num, time.strftime("%Y-%m-%d %H:%M"), font_style
+                    )
+                elif columns[col_num] == "pitch":
+                    ws.write(row_num, col_num, pitch, font_style)
+                elif columns[col_num] == "renter":
+                    ws.write(row_num, col_num, renter, font_style)
+                else:
+                    ws.write(
+                        row_num, col_num, getattr(row, columns[col_num]), font_style
+                    )
+
+        wb.save(response)
+
+        return response
+
+    actions = [export_as_excel]
     list_display = (
         "status",
         "renter",
