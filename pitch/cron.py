@@ -1,11 +1,8 @@
 from datetime import date
 import logging
-import os
-from MySQLdb import DatabaseError
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import User
 from account.mail import send_mail_custom
-from django.utils import timezone
 from project1.settings import HOST
 from pitch.custom_fnc import query_statistic
 

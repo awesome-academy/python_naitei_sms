@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from pitch.models import Pitch
 
 
@@ -25,3 +25,20 @@ def query_statistic():
         % (last_month, year)
     )
     return pitches
+
+
+def last_day_of_month(any_day):
+    next_month = any_day.replace(day=28) + timedelta(days=4)
+    return next_month - timedelta(days=next_month.day)
+
+
+def create_day_of_month():
+    last_month = date.today().month - 1
+    day_of_last_month = last_day_of_month(date(date.today().year, last_month, 1)).day
+    return [x + 1 for x in range(day_of_last_month)]
+
+
+def create_empty_day_of_month():
+    last_month = date.today().month - 1
+    day_of_last_month = last_day_of_month(date(date.today().year, last_month, 1)).day
+    return [0 for x in range(day_of_last_month)]

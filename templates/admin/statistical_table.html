@@ -32,12 +32,16 @@
         <td>{{ pitch.count }}</td>
         <td>
           {% if pitch.revenues %}
-            {{ pitch.revenues }} {% else %} 0 {% endif %}
-          </td>
-          <td>
-            <a href="/" class="viewlink">View</a>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            {{ pitch.revenues }}
+          {% else %}
+            0
+          {% endif %}
+        </td>
+        <td>
+          <a href="{{ host }}{% url 'admin:statistic-pitch' pitch.id %}"
+             class="viewlink">View</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

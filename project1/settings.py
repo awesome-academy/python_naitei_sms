@@ -69,7 +69,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "import_export",
     "pitch.apps.PitchConfig",
     "account.apps.AccountConfig",
     "api.apps.ApiConfig",
@@ -78,7 +77,8 @@ INSTALLED_APPS = [
     "bootstrap5",
     "compressor",
     "django_crontab",
-    'rest_framework',
+    "rest_framework",
+    "chartjs",
 ]
 
 MIDDLEWARE = [
@@ -194,7 +194,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 HOST = "http://localhost:8000" if IS_PRODUCT else "http://localhost:8000"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
