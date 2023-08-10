@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 
 load_dotenv()
 
@@ -70,11 +71,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "pitch.apps.PitchConfig",
     "account.apps.AccountConfig",
+    "api.apps.ApiConfig",
     "jquery",
     "bootstrap_datepicker_plus",
     "bootstrap5",
     "compressor",
     "django_crontab",
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -188,3 +191,9 @@ CRONJOBS = [("*/1 * * * *", "pitch.cron.mail_schedule_job")]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 HOST = "http://localhost:8000" if IS_PRODUCT else "http://localhost:8000"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}

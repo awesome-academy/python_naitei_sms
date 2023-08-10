@@ -13,6 +13,7 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", RedirectView.as_view(url="login/")),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("api/", include("api.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # accounts/ login/ [name='login']
