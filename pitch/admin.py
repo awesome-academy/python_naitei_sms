@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.http import HttpResponse
-from .models import Voucher, Pitch, Order, Comment, Image
+from .models import Voucher, Pitch, Order, Comment, Image, PitchRating,AccessComment
 from .models import Pitch
 from account.mail import send_mail_custom
 from django.utils.translation import gettext
@@ -61,6 +61,24 @@ class CommentAdmin(admin.ModelAdmin):
         "comment",
         "created_date",
     )
+    def delete_queryset(self, request, queryset):
+
+        for comment in queryset:
+            print(comment.pitch.id)
+            if PitchRating.objects.filter(pitch_id=comment.pitch.id).exists():
+                pitch_rating = PitchRating.objects.get(pitch_id=comment.pitch.id)
+                pitch_rating.delete_avg_rating(comment.rating)
+        queryset.delete()
+
+class PitchRatingAdmin(admin.ModelAdmin):
+    list_display = ('pitch', 'avg_rating', 'count_comment')
+    readonly_fields = ('avg_rating', 'count_comment')
+
+admin.site.register(PitchRating, PitchRatingAdmin)
+
+class AccessCommentAdmin(admin.ModelAdmin):
+    list_display = ('renter', 'pitch', 'count_comment_created')
+admin.site.register(AccessComment, AccessCommentAdmin)
 
 
 @admin.register(Order)

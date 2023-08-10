@@ -23,7 +23,6 @@ class Command(BaseCommand):
                     'title': random.choice(field_name),
                     'description': lorem.words(15),
                     'phone': self.generate_random_phone(),
-                    'avg_rating': random.choice(np.arange(0,5,0.5)),
                     'size': random.choice(['1', '2', '3']),
                     'surface': random.choice(['a', 'n', 'm']),
                     'price': random.randint(1000, 10000),

@@ -1,0 +1,222 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% load i18n %}
+{% bootstrap_javascript %}
+<link rel="stylesheet" href="{% static 'css/cmt.css' %}" />
+<div class=" m-3">
+  <div class="">
+    <div class="pitch-reviews">
+      {% if page_obj %}
+        {% for comment in page_obj %}
+          <div>
+            <div class="d-flex">
+              <img src="https://mdbcdn.b-cdn.net/img/new/avatars/1.webp"
+                   class="rounded-circle shadow-4"
+                   style="width: 40px;
+                          height: 40px"
+                   alt="Avatar" />
+              <span>
+                <p class="ms-3 fs-5 mb-0 pt-1">{{ comment.renter.username }}</p>
+                <div class="star-rating {% if readonly %}star-rating-readonly{% endif %} ">
+                  <span class="star {% if comment.rating >= 5 %}filled{% endif %}"
+                        data-value="5">&#9733;</span>
+                  <span class="star {% if comment.rating >= 4 %}filled{% endif %}"
+                        data-value="4">&#9733;</span>
+                  <span class="star {% if comment.rating >= 3 %}filled{% endif %}"
+                        data-value="3">&#9733;</span>
+                  <span class="star {% if comment.rating >= 2 %}filled{% endif %}"
+                        data-value="2">&#9733;</span>
+                  <span class="star {% if comment.rating >= 1 %}filled{% endif %}"
+                        data-value="1">&#9733;</span>
+                </div>
+              </span>
+            </div>
+            <p class="pb-0 ms-5 fs-6 fw-light">{{ comment.created_date }}</p>
+          </div>
+          <div class="d-flex">
+            <div class="flex-grow-1 ms-5 ">{{ comment.comment }}</div>
+            <div class="box-icon-update">
+              <i class='icon-comment' onclick="showUpdate('{{ comment.id }}')">⋮</i>
+              <div class="box-update-comment shadow-lg p-3 mb-5 bg-body-tertiary rounded"
+                   id="box_comment{{ comment.id }}">
+                <button onclick="showInputCommentUpdate('{{ comment.id }}')">{% trans 'Update' %}</button>
+              </div>
+            </div>
+          </div>
+          {% if request.user == comment.renter %}
+            <div class="box-input-update m-5"
+                 id="input_comment_update{{ comment.id }}"
+                 data-pitch-id="{{ pitch.id }}"
+                 data-comment-id="{{ comment.id }}"
+                 data-comment="{{ comment.comment }}">
+              <div id="rating_comment_update{{ comment.id }}"></div>
+            </div>
+          {% endif %}
+          <hr>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-6 m-5" id="reviewFormContainer">
+    <h4 class="text-uppercase">{% trans 'Write your review' %}</h4>
+    {% if messages %}
+      {% for message in messages %}<div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>{% endfor %}
+    {% endif %}
+    <form class="review-form"
+          action="/pitch/{{ pitch.id }}/?action=addcomment"
+          method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <textarea name="comment" rows="3" class="form-control"></textarea>
+        {% if comment_form.comment.errors %}
+          <div class="errorlist text-danger font-i pt-1 fs-14">
+            {% for error in comment_form.comment.errors %}<div>{{ error }}</div>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <div class="input-rating">
+          <strong class="text-uppercase">Your rating:</strong>
+          <div class="star-rating" id="start_comment">
+            <input type="radio" id="5-stars" name="rating" value="5" />
+            <label for="5-stars" class="star" title="5">&#9733;</label>
+            <input type="radio" id="4-stars" name="rating" value="4" />
+            <label for="4-stars" class="star" title="4">&#9733;</label>
+            <input type="radio" id="3-stars" name="rating" value="3" />
+            <label for="3-stars" class="star" title="3">&#9733;</label>
+            <input type="radio" id="2-stars" name="rating" value="2" />
+            <label for="2-stars" class="star" title="2">&#9733;</label>
+            <input type="radio" id="1-star" name="rating" value="1" />
+            <label for="1-star" class="star" title="1">&#9733;</label>
+          </div>
+          {% if comment_form.rating.errors %}
+            <div class="errorlist text-danger font-i pt-1 fs-14">
+              {% for error in comment_form.rating.errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      <br>
+      {% if request.user.is_authenticated %}
+        {% if access_comment.count_comment_created > 0 %}
+          <p>{% trans  'You have' %} {{ access_comment.count_comment_created }}{% trans ' times for commenting.' %}</p>
+          <div class="d-flex justify-content-center">
+            <input type="submit" value="Submit Review" class="btn btn-primary">
+          </div>
+        {% else %}
+          <p>
+            <p>{% trans 'Check if you have commented yet or not' %}</p>
+            {% trans 'If you did not book yet' %} <span><a href="">{% trans 'Book now' %}</a>{% trans  ' to post a review' %}</span>
+            <p class="text-danger">
+              {% trans 'If you have already booked. Please wait for us to confirm order then continue your post review.' %}
+            </p>
+          </p>
+        {% endif %}
+      {% else %}
+        <p>{% trans 'You need to login first' %}</p>
+      {% endif %}
+    </form>
+  </div>
+</div>
+<script>
+  const showUpdate = (id) => {
+    var boxUpdateComment = document.getElementById(`box_comment${id}`);
+    var inputUpdate = document.getElementById(`input_comment_update${id}`);
+
+    if (boxUpdateComment.style.display === 'block') {
+      boxUpdateComment.style.display = 'none';
+      inputUpdate.style.display = 'block';
+    } else {
+      boxUpdateComment.style.display = 'block';
+      inputUpdate.style.display = 'none';
+    }
+  };
+
+  const showInputCommentUpdate = (id) => {
+    console.log("showInputCommentUpdate() called with id:", id);
+    var boxUpdateComment = document.getElementById(`box_comment${id}`);
+    boxUpdateComment.style.display = "none";
+    var inputUpdate = document.getElementById(`input_comment_update${id}`);
+    inputUpdate.style.display = "block";
+    var reviewFormContainer = document.getElementById("reviewFormContainer");
+    reviewFormContainer.style.display = "none";
+    var pitchId = inputUpdate.getAttribute('data-pitch-id');
+    var commentId = inputUpdate.getAttribute('data-comment-id');
+    var commentContent = inputUpdate.getAttribute('data-comment');
+    var ratingInput = document.getElementById(`rating_comment_update${id}`);
+
+    ratingInput.innerHTML = `
+      <div class="col-md-6">
+        <h4 class="text-uppercase">{% trans 'Update your review'%}</h4>
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{message.tags}}" role="alert">
+              {{message}}
+            </div>
+          {% endfor %}
+        {% endif %}
+        <form class="review-form" action="/pitch/${pitchId}/?action=edit_comment&comment_id=${commentId}" method="post">
+          {%csrf_token%}
+          <div class="form-group">
+            <textarea name="comment" rows="4" class="form-control">${commentContent}</textarea>
+              </div>
+              <div class="form-group">
+                <div class="input-rating">
+                <strong class="text-uppercase">{% trans 'Your rating:'%}</strong>
+                <div class="star-rating" id="start_comment">
+                  <input type="radio" id="5-stars" name="rating" value="5" />
+                <label for="5-stars" class="star" title="5">&#9733;</label>
+
+                <input type="radio" id="4-stars" name="rating" value="4" />
+                <label for="4-stars" class="star" title="4">&#9733;</label>
+
+                <input type="radio" id="3-stars" name="rating" value="3" />
+                <label for="3-stars" class="star" title="3">&#9733;</label>
+
+                <input type="radio" id="2-stars" name="rating" value="2" />
+                <label for="2-stars" class="star" title="2">&#9733;</label>
+
+                <input type="radio" id="1-star" name="rating" value="1" />
+                <label for="1-star" class="star" title="1">&#9733;</label>
+              </div>
+            </div>
+          </div>
+        {% for field in comment_form %}
+          <div class="errorlist text-danger font-i pt-1 fs-14">
+            {% if field.errors %}
+            {% for error in field.errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
+            {% endif %}
+          </div>
+        {% endfor %}
+          <br>
+          {% if user.is_authenticated %}
+            <div class="d-grid gap-4 d-md-block">
+              <input type="submit"
+                     value="{% trans 'Submit Review'%}"
+                     class="btn btn-primary me-md-5">
+              <button type="button"
+                      class="btn btn-primary"
+                      onclick="closeRatingSection('${commentId}')">{% trans 'Cancel'%}</button>
+            </div>
+          {%else%}
+            <p>{% trans 'You must login to post a review'%} <span><a href="{% url 'login'%}">{% trans 'Login now'%}</a></span></p>
+          {%endif%}
+        </form>
+      </div>
+    </div>
+    `;
+  };
+
+  const closeRatingSection = (id) => {
+    var inputUpdate = document.getElementById(`input_comment_update${id}`);
+    var reviewFormContainer = document.getElementById("reviewFormContainer");
+    reviewFormContainer.style.display = "block";
+    inputUpdate.style.display = "none";
+    var ratingInput = document.getElementById(`rating_comment_update${id}`);
+    ratingInput.innerHTML = "";
+  }
+
+</script>

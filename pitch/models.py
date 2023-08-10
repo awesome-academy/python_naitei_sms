@@ -6,9 +6,10 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import redirect
-
+from django.db.models import Avg, Count
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 # Create your models here.
-
 
 class Voucher(models.Model):
     name = models.CharField(max_length=200)
@@ -34,12 +35,6 @@ class Pitch(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000, null=True)
     phone = models.CharField(max_length=100, null=True)
-    avg_rating = models.DecimalField(
-        max_digits=3,
-        decimal_places=1,
-        validators=[MaxValueValidator(5), MinValueValidator(0)],
-        default=0,
-    )
     size = models.CharField(
         max_length=1,
         choices=SIZE,
@@ -138,6 +133,50 @@ class Comment(models.Model):
     def __str__(self):
         return f"Comment {self.pk} - {self.renter.username}"
 
+class PitchRating(models.Model):
+    pitch = models.OneToOneField(Pitch,related_name="pitch_rating", on_delete=models.CASCADE)
+    avg_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        validators=[MaxValueValidator(5), MinValueValidator(0)],
+        default=0,
+    )
+    count_comment = models.PositiveIntegerField(default=0)
+
+    def update_avg_rating(self, rating):
+        self.avg_rating = (self.avg_rating * self.count_comment + rating)/(self.count_comment)
+        self.save()
+
+    def create_avg_rating(self, rating):
+        self.avg_rating = (self.avg_rating * self.count_comment + rating)/(self.count_comment+ 1)
+        self.count_comment += 1;
+        self.save()
+
+    def delete_avg_rating(self, rating):
+        if self.count_comment <= 1 :
+            self.count_comment = 0;
+            self.avg_rating = 0;
+        else:
+            self.avg_rating = (self.avg_rating * self.count_comment - rating)/(self.count_comment - 1)
+            self.count_comment -= 1;
+        self.save()
+
+class AccessComment(models.Model):
+    renter = models.ForeignKey(User, on_delete=models.CASCADE)
+    pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
+    count_comment_created = models.PositiveIntegerField(default=0)
+    count_comment_updated = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ['renter', 'pitch']
+
+    def counting_created(self):
+        self.count_comment_created +=1
+        self.save()
+
+    def counting_left(self):
+        self.count_comment_created -=1
+        self.save()
 
 class Image(models.Model):
     image = models.ImageField(
