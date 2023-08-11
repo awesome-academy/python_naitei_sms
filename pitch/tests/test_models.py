@@ -1,7 +1,7 @@
 import os
 from django.test import TestCase
 from django.conf import settings
-from pitch.models import Order, Comment, Voucher, Pitch, Image
+from pitch.models import Order, Comment, Voucher, Pitch, Image, PitchRating, AccessComment
 from django.contrib.auth.models import User
 
 class VoucherModelTestCase(TestCase):
@@ -43,7 +43,6 @@ class PitchModelTestCase(TestCase):
             title="Test Pitch",
             description="Test Description",
             phone="1234567890",
-            avg_rating=4.5,
             size="1",
             surface="n",
             price=1000
@@ -54,7 +53,6 @@ class PitchModelTestCase(TestCase):
         field_label_title = self.pitch._meta.get_field("title").verbose_name
         field_label_description = self.pitch._meta.get_field("description").verbose_name
         field_label_phone = self.pitch._meta.get_field("phone").verbose_name
-        field_label_avg_rating = self.pitch._meta.get_field("avg_rating").verbose_name
         field_label_size = self.pitch._meta.get_field("size").verbose_name
         field_label_surface = self.pitch._meta.get_field("surface").verbose_name
         field_label_price = self.pitch._meta.get_field("price").verbose_name
@@ -67,7 +65,6 @@ class PitchModelTestCase(TestCase):
         self.assertEqual(field_label_title, "title")
         self.assertEqual(field_label_description, "description")
         self.assertEqual(field_label_phone, "phone")
-        self.assertEqual(field_label_avg_rating, "avg rating")
         self.assertEqual(field_label_size, "size")
         self.assertEqual(field_label_surface, "surface")
         self.assertEqual(field_label_price, "price")
@@ -95,7 +92,6 @@ class OrderModelTestCase(TestCase):
             title="Test Pitch",
             description="Test Description",
             phone="1234567890",
-            avg_rating=4.5,
             size="1",
             surface="n",
             price=1000
@@ -144,7 +140,6 @@ class CommentModelTestCase(TestCase):
             title="Test Pitch",
             description="Test Description",
             phone="1234567890",
-            avg_rating=4.5,
             size="1",
             surface="n",
             price=1000
@@ -180,7 +175,6 @@ class ImageModelTestCase(TestCase):
             title="Pitch 1",
             description="Description of pitch 1",
             phone="123456789",
-            avg_rating=4.5,
             size="1",
             surface="n",
             price=200000,
@@ -194,3 +188,34 @@ class ImageModelTestCase(TestCase):
     def test_image_upload_to(self):
         expected_path = os.path.join(settings.MEDIA_ROOT, "default-image.jpg")
         self.assertEqual(self.image.image.path, expected_path)
+
+class AccessCommentModelTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.renter = User.objects.create_user(username="testuser", password="testpass")
+        cls.pitch = Pitch.objects.create(
+            title="Test Pitch",
+            size="3",
+            price=100)
+        cls.access_comment = AccessComment.objects.create(renter=cls.renter, pitch=cls.pitch)
+
+    def test_counting_created(self):
+        initial_count = self.access_comment.count_comment_created
+        self.access_comment.counting_created()
+        self.assertEqual(self.access_comment.count_comment_created, initial_count + 1)
+
+    def test_counting_left(self):
+        initial_count = self.access_comment.count_comment_created
+        self.access_comment.counting_left()
+        if initial_count > 0:
+            self.assertEqual(self.access_comment.count_comment_created, initial_count - 1)
+        else:
+            self.assertEqual(self.access_comment.count_comment_created, initial_count)
+
+    def test_unique_together_constraint(self):
+        with self.assertRaises(Exception):
+            AccessComment.objects.create(renter=self.renter, pitch=self.pitch)
+
+    def test_string_representation(self):
+        expected_str = f"AccessComment {self.renter.username} - {self.pitch.title}"
+        self.assertEqual(str(self.access_comment), expected_str)

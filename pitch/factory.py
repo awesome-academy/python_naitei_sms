@@ -27,7 +27,6 @@ class PitchFactory(DjangoModelFactory):
     title = factory.Faker("name")
     description = factory.Faker("sentence", nb_words=40)
     phone = factory.Faker("phone_number")
-    avg_rating = 0
     price = 1000000
 
 

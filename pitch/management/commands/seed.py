@@ -14,13 +14,14 @@ class Command(BaseCommand):
     def seed_pitches(self, num_pitches=6):
         pitches_data = []
         field_name = ['Anfield', 'Arsenal', 'Ayresome Park', 'Cardiff City', 'Bloomfield Road', 'Boundary Park']
+        field_name_copy = field_name.copy()
         for i in range(1, num_pitches + 1):
 
             pitch_data = {
                 'model': 'pitch.Pitch',
                 'fields': {
                     'address': f'Address {i}',
-                    'title': random.choice(field_name),
+                    'title': field_name_copy.pop(0),
                     'description': lorem.words(15),
                     'phone': self.generate_random_phone(),
                     'size': random.choice(['1', '2', '3']),
