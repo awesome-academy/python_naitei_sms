@@ -33,7 +33,7 @@ def sign_up(request):
             user.save()
             send_mail_custom(
                 gettext("Verify your email from Pitch App"),
-                email,
+                [email],
                 None,
                 "email/verify_email_signup.html",
                 link=link,

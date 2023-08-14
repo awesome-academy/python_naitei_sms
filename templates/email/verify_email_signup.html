@@ -83,9 +83,11 @@
         {% endblock header %}
       </div>
       <div class="box-content">
-        <p class="pink">
-          {% trans "Hello" %} <strong>{{ params.username }}</strong>
-        </p>
+        {% block preface %}
+          <p class="pink">
+            {% trans "Hello" %} <strong>{{ params.username }}</strong>
+          </p>
+        {% endblock preface %}
         {% block content %}
           <p>
             {% trans "Thank you for signing up with our service. Please click the button below to verify your email address:" %}

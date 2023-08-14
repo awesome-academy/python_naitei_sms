@@ -1,10 +1,10 @@
 import re
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
-from pitch.models import Pitch, Order, Comment,PitchRating, AccessComment
+from pitch.models import Pitch, Order, Comment, PitchRating, AccessComment
 from django.db.models import Count
 from django.http import Http404, HttpResponseRedirect
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
@@ -19,9 +19,11 @@ from project1.settings import HOST
 from django.db.models import Q, Avg
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from .forms import SearchForm,CommentForm
-from django.shortcuts import redirect, get_object_or_404
-from django.db import DatabaseError, transaction
+from .forms import SearchForm, CommentForm
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.contrib.auth.models import User
+
 
 # Create your views here.
 def index(request):
@@ -41,6 +43,7 @@ def index(request):
     context = {"pitch_list": pitches}
     return render(request, "index.html", context=context)
 
+
 @transaction.atomic
 @login_required
 def pitch_detail(request, pk):
@@ -54,7 +57,6 @@ def pitch_detail(request, pk):
         pitch_rating = PitchRating.objects.create(pitch=pitch)
     context["pitch"] = pitch
 
-
     context["pitch_rating"] = pitch_rating
 
     start_rental_date = datetime.datetime.now() + datetime.timedelta(days=1)
@@ -62,11 +64,11 @@ def pitch_detail(request, pk):
     context["images"] = context["pitch"].image.all()
 
     comments = Comment.objects.filter(pitch=pitch)
-    context['comments'] = comments
+    context["comments"] = comments
 
     user_comment_exists = Comment.objects.filter(pitch=pitch, renter=request.user)
-    context['user_comment_exists'] = user_comment_exists
-    orders = Order.objects.filter(pitch=pitch,status="c", renter=request.user)
+    context["user_comment_exists"] = user_comment_exists
+    orders = Order.objects.filter(pitch=pitch, status="c", renter=request.user)
     context["orders"] = orders
     try:
         access_comment = AccessComment.objects.get(renter=request.user, pitch=pitch)
@@ -76,18 +78,19 @@ def pitch_detail(request, pk):
 
     form = RentalPitchModelForm(request.POST, pitch=pitch)
     context["form"] = RentalPitchModelForm(
-            initial={
-                "time_start": start_rental_date,
-                "time_end": start_rental_date + datetime.timedelta(hours=1),
-            },
-            pitch=pitch,)
-    if request.method == 'POST' and request.GET.get('action') == 'addcomment':
+        initial={
+            "time_start": start_rental_date,
+            "time_end": start_rental_date + datetime.timedelta(hours=1),
+        },
+        pitch=pitch,
+    )
+    if request.method == "POST" and request.GET.get("action") == "addcomment":
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
             data = Comment()
             data.comment = comment_form.cleaned_data["comment"]
             data.rating = comment_form.cleaned_data["rating"]
-            data.ip = request.META.get('REMOTE_ADDR')
+            data.ip = request.META.get("REMOTE_ADDR")
             data.pitch_id = pk
             data.renter = request.user
             data.save()
@@ -95,13 +98,15 @@ def pitch_detail(request, pk):
             access_comment.counting_left()
             return HttpResponseRedirect(pitch.get_absolute_url())
         else:
-            context['comment_form'] = comment_form
-    elif request.method == "POST" and request.GET.get('action') == 'edit_comment':
-        comment_id = request.GET.get('comment_id')
+            context["comment_form"] = comment_form
+    elif request.method == "POST" and request.GET.get("action") == "edit_comment":
+        comment_id = request.GET.get("comment_id")
         comment = Comment.objects.get(pitch=pitch, id=comment_id)
-        comment_form = CommentForm(request.POST,instance=comment)
+        comment_form = CommentForm(request.POST, instance=comment)
         if comment_form.is_valid():
-            pitch_rating.update_avg_rating(comment_form.cleaned_data["rating"] - comment.rating )
+            pitch_rating.update_avg_rating(
+                comment_form.cleaned_data["rating"] - comment.rating
+            )
             data = comment_form.save(commit=False)
             data.save()
             return HttpResponseRedirect(pitch.get_absolute_url())
@@ -133,7 +138,7 @@ def pitch_detail(request, pk):
 
             send_mail_custom(
                 gettext("Notice to order a pitch from Pitch App"),
-                email,
+                [email],
                 None,
                 "email/notify_order_pitch.html",
                 link=link,
@@ -188,14 +193,15 @@ def order_cancel(request, pk):
     if request.method == "POST":
         form = CancelOrderModelForm(request.POST)
         if form.is_valid():
-            email = request.user.email
+            admins = User.objects.filter(is_superuser=1)
+            emails = list(map(lambda x: x.email, admins))
             username = request.user.username
-            link = HOST + reverse_lazy("order-detail", kwargs={"pk": pk})
+            link = HOST + "/admin/pitch/order/%d/change/" % pk
             order.status = "d"
             order.save()
             send_mail_custom(
-                _("Order cancellation notice from Pitch App"),
-                email,
+                _("Notice of customer order cancellation from Pitch App"),
+                emails,
                 None,
                 "email/notify_cancel_order.html",
                 link=link,
