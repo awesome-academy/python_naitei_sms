@@ -39,9 +39,9 @@
             {% block content %}
             {% endblock content %}
           </div>
-          <div class="row p-0 m-0">
-            {% include "pagination.html" %}
-          </div>
+          {% block pagination %}
+            <div class="row p-0 m-0">{% include "pagination.html" %}</div>
+          {% endblock pagination %}
         </div>
       </div>
     </div>

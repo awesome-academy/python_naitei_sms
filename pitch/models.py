@@ -178,7 +178,6 @@ class AccessComment(models.Model):
     pitch = models.ForeignKey(Pitch, on_delete=models.CASCADE)
     count_comment_created = models.PositiveIntegerField(default=0)
     count_comment_updated = models.PositiveIntegerField(default=0)
-
     class Meta:
         unique_together = ["renter", "pitch"]
 
@@ -187,8 +186,12 @@ class AccessComment(models.Model):
         self.save()
 
     def counting_left(self):
-        self.count_comment_created -= 1
+        if self.count_comment_created == 0:
+            self.count_comment_created = 0
+        else: self.count_comment_created -=1
         self.save()
+    def __str__(self):
+        return f"AccessComment {self.renter.username} - {self.pitch.title}"
 
 
 class Image(models.Model):

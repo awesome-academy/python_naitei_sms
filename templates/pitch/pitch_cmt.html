@@ -99,14 +99,19 @@
       </div>
       <br>
       {% if request.user.is_authenticated %}
-        {% if access_comment.count_comment_created > 0 %}
-          <p>{% trans  'You have' %} {{ access_comment.count_comment_created }}{% trans ' times for commenting.' %}</p>
-          <div class="d-flex justify-content-center">
-            <input type="submit" value="Submit Review" class="btn btn-primary">
-          </div>
+        {% if orders.exists %}
+          {% if access_comment.count_comment_created > 0 %}
+            <p>{% trans  'You have' %} {{ access_comment.count_comment_created }}{% trans ' times for commenting.' %}</p>
+            <div class="d-flex justify-content-center">
+              <input type="submit" value="Submit Review" class="btn btn-primary">
+            </div>
+          {% else %}
+            <p>
+              <p>{% trans 'Check if you have commented yet or not' %}</p>
+            </p>
+          {% endif %}
         {% else %}
           <p>
-            <p>{% trans 'Check if you have commented yet or not' %}</p>
             {% trans 'If you did not book yet' %} <span><a href="">{% trans 'Book now' %}</a>{% trans  ' to post a review' %}</span>
             <p class="text-danger">
               {% trans 'If you have already booked. Please wait for us to confirm order then continue your post review.' %}
@@ -118,6 +123,7 @@
       {% endif %}
     </form>
   </div>
+  {% include 'pagination.html' %}
 </div>
 <script>
   const showUpdate = (id) => {

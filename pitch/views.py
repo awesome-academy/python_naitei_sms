@@ -85,17 +85,17 @@ def pitch_detail(request, pk):
     )
     if request.method == "POST" and request.GET.get("action") == "addcomment":
         comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            data = Comment()
-            data.comment = comment_form.cleaned_data["comment"]
-            data.rating = comment_form.cleaned_data["rating"]
-            data.ip = request.META.get("REMOTE_ADDR")
-            data.pitch_id = pk
-            data.renter = request.user
-            data.save()
-            pitch_rating.create_avg_rating(data.rating)
-            access_comment.counting_left()
-            return HttpResponseRedirect(pitch.get_absolute_url())
+        if comment_form.is_valid() and orders.exists() and access_comment.count_comment_created>0:
+                data = Comment()
+                data.comment = comment_form.cleaned_data["comment"]
+                data.rating = comment_form.cleaned_data["rating"]
+                data.ip = request.META.get('REMOTE_ADDR')
+                data.pitch_id = pk
+                data.renter = request.user
+                data.save()
+                pitch_rating.create_avg_rating(data.rating)
+                access_comment.counting_left()
+                return HttpResponseRedirect(pitch.get_absolute_url())
         else:
             context["comment_form"] = comment_form
     elif request.method == "POST" and request.GET.get("action") == "edit_comment":
@@ -163,11 +163,13 @@ def pitch_detail(request, pk):
             pitch=pitch,
         )
         context["comment_form"] = CommentForm
-    paginator = Paginator(comments, 10)
+
+    paginator = Paginator(comments, 2)
+    is_pagination = True if paginator.num_pages >=2 else False
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     context["page_obj"] = page_obj
-    context["is_paginated"] = True
+    context["is_paginated"] = is_pagination
 
     return render(request, "pitch/pitch_detail.html", context=context)
 
