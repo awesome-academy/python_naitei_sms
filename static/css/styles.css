@@ -126,6 +126,10 @@
   text-align: justify;
 }
 
+.width-100 {
+  width: 100% !important;
+}
+
 .col {
   padding: 10px;
   display: flex;

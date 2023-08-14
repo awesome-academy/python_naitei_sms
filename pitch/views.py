@@ -12,15 +12,14 @@ import datetime
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from pitch.custom_fnc import convert_timedelta
-from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from account.mail import send_mail_custom
 from django.utils.translation import gettext_lazy as _
 from project1.settings import HOST
-from django.db.models import Q, Avg
+from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from .forms import SearchForm, CommentForm
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.contrib.auth.models import User
 
@@ -239,7 +238,6 @@ def search_view(request):
     size = request.GET.get("size")
     surface = request.GET.get("surface")
     results = []
-    # results = Pitch.objects.all().prefetch_related("image")
     ask = [query, address, price, size, surface]
     queryFilter = ""
     if surface:

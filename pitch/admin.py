@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.http import HttpResponse
-from .models import Voucher, Pitch, Order, Comment, Image, PitchRating,AccessComment
+from .models import Voucher, Pitch, Order, Comment, Image, PitchRating, AccessComment
 from .models import Pitch
 from account.mail import send_mail_custom
 from django.utils.translation import gettext
@@ -9,15 +9,17 @@ from django.urls import reverse_lazy
 from datetime import datetime, timedelta
 from django.db.models import Q
 from pitch.forms import FormCustomSearchAdminSite
-from import_export.admin import ExportActionModelAdmin
 import xlwt
+from project1.admin import my_admin_site
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 
 
 class ImageInline(admin.TabularInline):
     model = Image
 
 
-@admin.register(Pitch)
+@admin.register(Pitch, site=my_admin_site)
 class PitchAdmin(admin.ModelAdmin):
     list_display = ("address", "title", "description", "size", "surface", "price")
     fields = [
@@ -47,12 +49,12 @@ class PitchAdmin(admin.ModelAdmin):
             super().delete_model(request, obj)
 
 
-@admin.register(Voucher)
+@admin.register(Voucher, site=my_admin_site)
 class VoucherAdmin(admin.ModelAdmin):
     list_display = ("name", "min_cost", "discount", "count")
 
 
-@admin.register(Comment)
+@admin.register(Comment, site=my_admin_site)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         "renter",
@@ -61,8 +63,8 @@ class CommentAdmin(admin.ModelAdmin):
         "comment",
         "created_date",
     )
-    def delete_queryset(self, request, queryset):
 
+    def delete_queryset(self, request, queryset):
         for comment in queryset:
             print(comment.pitch.id)
             if PitchRating.objects.filter(pitch_id=comment.pitch.id).exists():
@@ -70,18 +72,23 @@ class CommentAdmin(admin.ModelAdmin):
                 pitch_rating.delete_avg_rating(comment.rating)
         queryset.delete()
 
+
 class PitchRatingAdmin(admin.ModelAdmin):
-    list_display = ('pitch', 'avg_rating', 'count_comment')
-    readonly_fields = ('avg_rating', 'count_comment')
+    list_display = ("pitch", "avg_rating", "count_comment")
+    readonly_fields = ("avg_rating", "count_comment")
+
 
 admin.site.register(PitchRating, PitchRatingAdmin)
 
+
 class AccessCommentAdmin(admin.ModelAdmin):
-    list_display = ('renter', 'pitch', 'count_comment_created')
+    list_display = ("renter", "pitch", "count_comment_created")
+
+
 admin.site.register(AccessComment, AccessCommentAdmin)
 
 
-@admin.register(Order)
+@admin.register(Order, site=my_admin_site)
 class OrderAdmin(admin.ModelAdmin):
     @admin.action(description=gettext("Export as excel"))
     def export_as_excel(self, request, queryset):
@@ -275,3 +282,7 @@ class OrderAdmin(admin.ModelAdmin):
                         request, f"Failed to send cancellation email: {str(e)}"
                     )
         super().save_model(request, obj, form, change)
+
+
+my_admin_site.register(Group)
+my_admin_site.register(User)

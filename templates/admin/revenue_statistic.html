@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% load bootstrap5 %}
+{% load i18n static %}
+{% block content %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+  <div class="col-8">
+    {% include "admin/statistical_table.html" with page_obj=page_obj month=month host=host %}
+    <div class="row p-0 m-0">
+      {% include "pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

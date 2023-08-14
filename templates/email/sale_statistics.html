@@ -9,5 +9,6 @@
   </h1>
 {% endblock header %}
 {% block content %}
+  {% include "admin/statistical_table.html" with page_obj=params.page_obj host=params.host month=params.month %}
   <p>{% trans "Pitch App system." %}</p>
 {% endblock content %}
