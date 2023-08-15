@@ -15,3 +15,8 @@ STATUS_ORDER = (
     ("d", "Cancelled"),
     ("c", "Confirmed"),
 )
+
+TYPE_TOKEN = (
+    ("0", "Create Account"),
+    ("1", "Change Password"),
+)
