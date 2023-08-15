@@ -1,6 +1,6 @@
 import pandas as pd
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
@@ -131,35 +131,41 @@ def pitch_detail(request, pk):
             cost = convert_timedelta(time_end - time_start) * (pitch.price)
             if voucher:
                 cost -= voucher.discount
-            order = Order.objects.create(
-                pitch=pitch,
-                time_start=time_start,
-                time_end=time_end,
-                renter=request.user,
-                price=pitch.price,
-                cost=cost,
-                voucher=voucher,
-            )
-            access_comment.counting_created()
-            link = HOST + reverse_lazy("order-detail", kwargs={"pk": order.id})
 
-            send_mail_custom(
-                gettext("Notice to order a pitch from Pitch App"),
-                [email],
-                None,
-                "email/notify_order_pitch.html",
-                link=link,
-                username=username,
-                time_start=time_start,
-                time_end=time_end,
-                pitch_title=pitch.title,
-                price=pitch.price,
-                cost=cost,
-            )
+            try:
+                with transaction.atomic():
+                    order = Order.objects.create(
+                        pitch=pitch,
+                        time_start=time_start,
+                        time_end=time_end,
+                        renter=request.user,
+                        price=pitch.price,
+                        cost=cost,
+                        voucher=voucher,
+                    )
+                    access_comment.counting_created()
+                    link = HOST + reverse_lazy("order-detail", kwargs={"pk": order.id})
 
-            return HttpResponseRedirect(
-                reverse_lazy("order-detail", kwargs={"pk": order.id})
-            )
+                    send_mail_custom(
+                        gettext("Notice to order a pitch from Pitch App"),
+                        [email],
+                        None,
+                        "email/notify_order_pitch.html",
+                        link=link,
+                        username=username,
+                        time_start=time_start,
+                        time_end=time_end,
+                        pitch_title=pitch.title,
+                        price=pitch.price,
+                        cost=cost,
+                    )
+
+                    return HttpResponseRedirect(
+                        reverse_lazy("order-detail", kwargs={"pk": order.id})
+                    )
+            except Exception:
+                return HttpResponse(_("Something went wrong, please come back."))
+
         else:
             context["form"] = form
     else:
@@ -207,19 +213,23 @@ def order_cancel(request, pk):
             username = request.user.username
             link = HOST + "/admin/pitch/order/%d/change/" % pk
             order.status = "d"
-            order.save()
-            send_mail_custom(
-                _("Notice of customer order cancellation from Pitch App"),
-                emails,
-                None,
-                "email/notify_cancel_order.html",
-                link=link,
-                username=username,
-                time_start=order.time_start,
-                time_end=order.time_end,
-                pitch_title=order.pitch.title,
-                cost=order.cost,
-            )
+            try:
+                with transaction.atomic():
+                    order.save()
+                    send_mail_custom(
+                        _("Notice of customer order cancellation from Pitch App"),
+                        emails,
+                        None,
+                        "email/notify_cancel_order.html",
+                        link=link,
+                        username=username,
+                        time_start=order.time_start,
+                        time_end=order.time_end,
+                        pitch_title=order.pitch.title,
+                        cost=order.cost,
+                    )
+            except Exception:
+                return HttpResponse(_("Something went wrong, please come back."))
         else:
             context["form"] = form
     else:
