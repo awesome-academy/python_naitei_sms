@@ -1,14 +1,15 @@
 import re
+import pandas as pd
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
-from pitch.models import Pitch, Order, Comment, PitchRating, AccessComment
+from pitch.models import Pitch, Order, Comment,PitchRating, AccessComment, Image
 from django.db.models import Count
-from django.http import Http404, HttpResponseRedirect
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
+from django.contrib.auth.models import User
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from pitch.custom_fnc import convert_timedelta
@@ -19,11 +20,13 @@ from project1.settings import HOST
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from .forms import SearchForm, CommentForm
-from django.db import transaction
-from django.contrib.auth.models import User
-
-
+from .forms import SearchForm,CommentForm
+from django.db import DatabaseError, transaction
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ValidationError
 # Create your views here.
 def index(request):
     pitches = (
@@ -287,3 +290,92 @@ def search_view(request):
     }
 
     return render(request, "pitch/pitch_search.html", context)
+
+@staff_member_required
+
+
+def upload_pitch_data(request):
+    if request.method == 'POST':
+        excel_file = request.FILES['excel_file']
+        if excel_file.name.endswith('.xlsx'):
+            try:
+                df_pitch_data = pd.read_excel(excel_file, sheet_name='PitchData')
+            except Exception as e:
+                messages.error(request, f"Error reading sheets: {str(e)}")
+                return HttpResponseRedirect(request.path_info)
+
+            success_count_data = 0
+            failure_count_data = 0
+            success_count_images = 0
+            failure_count_images = 0
+            error_details_data = []
+            error_details_images = []
+            for index, row in df_pitch_data.iterrows():
+                try:
+                    required_fields = ['title', 'address', 'size', 'surface', 'price']
+                    missing_fields = [field for field in required_fields if pd.isnull(row[field]) or row[field] == '']
+                    if missing_fields:
+                        failure_count_data += 1
+                        error_details_data.append (f"Error at row {index + 2}: Required fields cannot be empty: {', '.join(missing_fields)}")
+                    else:
+                        pitch = Pitch(
+                            title=row['title'],
+                            description=row['description'],
+                            price=row['price'],
+                            address=row['address'],
+                            phone=row['phone'],
+                            size=row['size'],
+                            surface=row['surface']
+                        )
+                        try:
+                            pitch.full_clean()
+                            pitch.save()
+                            for i in range(1, 4):
+                                image_url = row[f'image{i}']
+                                if image_url and isinstance(image_url, str):
+                                    try:
+                                        image = Image(image=image_url, pitch=pitch)
+                                        image.full_clean()
+                                        image.save()
+                                        success_count_images += 1
+                                    except ValidationError as e:
+                                        failure_count_images += 1
+                                        field_errors = []
+                                        for field, errors in e.message_dict.items():
+                                            field_errors.append(f"{field.capitalize()}: {', '.join(errors)}")
+                                        error_details_images.append(
+                                            f"Error at row {index + 2}, image{i}: {'; '.join(field_errors)}"
+                                        )
+                            success_count_data += 1
+                        except ValidationError as e:
+                            failure_count_data += 1
+                            field_errors = []
+                            for field, errors in e.message_dict.items():
+                                field_errors.append(f"{field.capitalize()}: {', '.join(errors)}")
+
+                            error_details_data.append(
+                                f"Error at row {index + 2}: {'; '.join(field_errors)}"
+                            )
+                except Exception as e:
+                    failure_count_data += 1
+                    error_details_data.append(f"Error at row {index + 2}: {str(e)}")
+
+            if failure_count_data > 0:
+                for error_detail in error_details_data:
+                    messages.error(request, f"PitchData import: {error_detail}")
+
+            if failure_count_images > 0:
+                for error_detail in error_details_images:
+                    messages.error(request, f"PitchImages import: {error_detail}")
+
+            messages.success(request, f"PitchData import successful: {success_count_data} records added.")
+            messages.success(request, f"PitchImages import successful: {success_count_images} records added.")
+            messages.error(request, f"Import failed (PitchData): {failure_count_data} records.")
+            messages.error(request, f"Import failed (PitchImages): {failure_count_images} records.")
+
+            return HttpResponseRedirect(request.path_info)
+        else:
+            messages.error(request, 'Please upload a valid Excel file.')
+            return HttpResponseRedirect(request.path_info)
+
+    return render(request, 'admin/upload_pitch_data.html')

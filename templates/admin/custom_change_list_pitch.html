@@ -1,0 +1,7 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'upload_pitch_data' %}" class="addlink">Upload file</a>
+  </li>
+  {{ block.super }}
+{% endblock %}

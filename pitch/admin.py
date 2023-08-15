@@ -14,6 +14,9 @@ from project1.admin import my_admin_site
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.utils.html import format_html
 
 class ImageInline(admin.TabularInline):
     model = Image
@@ -47,9 +50,9 @@ class PitchAdmin(admin.ModelAdmin):
             )
         else:
             super().delete_model(request, obj)
+    change_list_template = "admin/custom_change_list_pitch.html"
 
-
-@admin.register(Voucher, site=my_admin_site)
+@admin.register(Voucher)
 class VoucherAdmin(admin.ModelAdmin):
     list_display = ("name", "min_cost", "discount", "count")
 
