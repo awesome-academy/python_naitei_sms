@@ -22,4 +22,9 @@ urlpatterns = [
         views.VerifyChangeInfoView.as_view(),
         name="verify-change-info",
     ),
+    path(
+        "statistic/revenue/",
+        views.RevenueStatisticView.as_view(),
+        name="api-revenue-statistic",
+    ),
 ]
