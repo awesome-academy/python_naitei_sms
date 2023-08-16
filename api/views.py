@@ -6,7 +6,11 @@ from django.contrib.auth.models import User
 from account.mail import send_mail_custom
 from account.models import EmailVerify
 from project1.settings import HOST
-from .serialize import ChangePasswordSerializer, UserSerializer
+from .serialize import (
+    ChangePasswordSerializer,
+    UserSerializer,
+    VerifyChangeInfoSerializer,
+)
 from django.contrib.auth import login
 from rest_framework import status
 from django.utils.translation import gettext as _
@@ -14,11 +18,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 from rest_framework.generics import UpdateAPIView
-from django.db import IntegrityError, transaction, DatabaseError
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from .serialize import UserSerializer, FavoritePitchSerializer
 from pitch.models import Favorite, Pitch
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 
 @api_view(["POST"])
@@ -147,7 +152,91 @@ class ChangePasswordView(UpdateAPIView):
             {
                 "status": "error",
                 "errors": serializer.errors,
-                "message": "The two password fields didn't match.",
+                "message": _("The two password fields didn't match."),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class ChangeInfoView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    def post(self, request):
+        user = request.user
+        try:
+            token = uuid.uuid4()
+            link = HOST + reverse("verify-change-info", kwargs={"token": token})
+            send_mail_custom(
+                _("Link to change info from Pitch App"),
+                [user.email],
+                None,
+                "email/change_info.html",
+                link=link,
+                username=user.username,
+            )
+            EmailVerify.objects.create(token=token, user=user, type="2")
+
+        except BadHeaderError:
+            return Response(
+                {"message": _("Email sending failed.")},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        return Response(
+            {
+                "message": _("Info change link has been sent to your email"),
+            }
+        )
+
+
+class VerifyChangeInfoView(UpdateAPIView):
+    serializer_class = VerifyChangeInfoSerializer
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            token = kwargs.pop("token")
+            verify = EmailVerify.objects.get(token=token)
+            try:
+                with transaction.atomic():
+                    if serializer.data.get("email"):
+                        verify.user.email = serializer.data.get("email")
+                    if serializer.data.get("first_name"):
+                        verify.user.first_name = serializer.data.get("first_name")
+                    if serializer.data.get("last_name"):
+                        verify.user.last_name = serializer.data.get("last_name")
+                    verify.user.save()
+                    verify.delete()
+                    serializer = UserSerializer(verify.user)
+
+                    return Response(
+                        {
+                            "message": _("Update info success!"),
+                            "data": serializer.data,
+                        }
+                    )
+
+            except Exception:
+                return Response(
+                    {
+                        "message": _("Something went wrong"),
+                        "status": "error",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response(
+            {
+                "status": "error",
+                "errors": serializer.errors,
+                "message": _("Something went wrong."),
             },
             status=status.HTTP_400_BAD_REQUEST,
         )

@@ -6,6 +6,7 @@ urlpatterns = [
     path(
         "user/change_password", views.user_change_password, name="user-change-password"
     ),
+    path("user/change_info", views.ChangeInfoView.as_view(), name="user-change-info"),
     path(
         "user/change_password/<uuid:token>",
         views.ChangePasswordView.as_view(),
@@ -15,6 +16,10 @@ urlpatterns = [
     path(
         "toggle_favorite_pitch/<int:pitch_id>/",
         views.toggle_favorite_pitch,
-        name="toggle-favorite-pitch",
+        name="toggle-favorite-pitch"),
+    path(
+        "user/change_info/<uuid:token>",
+        views.VerifyChangeInfoView.as_view(),
+        name="verify-change-info",
     ),
 ]
