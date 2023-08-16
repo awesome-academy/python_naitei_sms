@@ -147,7 +147,8 @@ class RegisterFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_username_is_invalid(self):
-        username = "user1"
+        UserFactory(username="user")
+        username = "user"
         email = "user@gmail.com"
         password1 = "admin@123"
         password2 = "admin@123"
@@ -190,6 +191,7 @@ class RegisterFormTest(TestCase):
             },
         )
         self.assertFalse(form.is_valid())
+
 
 class CommentFormTest(TestCase):
     def test_comment_form_valid(self):
