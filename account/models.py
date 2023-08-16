@@ -7,7 +7,7 @@ from pitch.constant import TYPE_TOKEN
 
 # Create your models here.
 class EmailVerify(models.Model):
-    user = models.ForeignKey(User, unique=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.UUIDField(
         default=uuid.uuid4,
     )
