@@ -22,6 +22,8 @@ class UserSerializer(ModelSerializer):
             "is_staff",
             "is_superuser",
             "date_joined",
+            "last_name",
+            "first_name",
         ]
 
 
@@ -50,3 +52,20 @@ class FavoritePitchSerializer(ModelSerializer):
 
     def get_pitch_title(self, favorite_instance):
         return favorite_instance.pitch.title if favorite_instance.pitch else None
+    
+class VerifyChangeInfoSerializer(Serializer):
+    first_name = CharField(required=False)
+    last_name = CharField(required=False)
+    email = CharField(required=False)
+
+    def validate(self, data):
+        if (
+            data.get("email") == None
+            and data.get("first_name") == None
+            and data.get("last_name") == None
+        ):
+            raise ValidationError(
+                {"fields": _("Minimum field required for email, first_name, last_name")}
+            )
+
+        return data

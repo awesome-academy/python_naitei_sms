@@ -1,0 +1,19 @@
+{% extends 'email/verify_email_signup.html' %}
+{% load i18n %}
+{% block title %}
+  <title>{% trans "Link to change info from Pitch App" %}</title>
+{% endblock title %}
+{% block header %}
+  <h1>
+    {% trans "Link to change info from Pitch App" %}
+  </h1>
+{% endblock header %}
+{% block content %}
+  <p>
+    {% trans "Thank you for booking the pitch on the Pitch App system." %}
+  </p>
+  <p>
+    {% trans "To change the info, please click the Change Info button." %}
+  </p>
+  <a href="{{ params.link }}" class="button-verify">{% trans "Change Info" %}</a>
+{% endblock content %}

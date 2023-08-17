@@ -19,4 +19,5 @@ STATUS_ORDER = (
 TYPE_TOKEN = (
     ("0", "Create Account"),
     ("1", "Change Password"),
+    ("2", "Change Information"),
 )
