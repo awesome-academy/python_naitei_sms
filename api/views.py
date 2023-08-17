@@ -24,37 +24,74 @@ from .serialize import UserSerializer, FavoritePitchSerializer
 from pitch.models import Favorite, Pitch
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from django.db import IntegrityError, transaction, DatabaseError
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes
+from django.contrib.sessions.models import Session
 
 
 @api_view(["POST"])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 def users_login(request):
+    session_id = request.COOKIES.get("sessionid")
     username = request.data.get("username")
     password = request.data.get("password")
-    try:
-        user = User.objects.get(username=username, is_active=True)
-    except User.DoesNotExist:
+
+    if not session_id and not username:
         return Response(
-            {"message": _("Account does not exist")},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {"message": _("Username is required")},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
-    if user.check_password(password):
-        serializer = UserSerializer(user)
+    if not session_id and not password:
+        return Response(
+            {"message": _("Password is required")},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if session_id:
+        try:
+            session = Session.objects.get(session_key=session_id)
+            user_id = session.get_decoded().get("_auth_user_id")
+            user = User.objects.get(pk=user_id)
+        except Session.DoesNotExist:
+            user = None
+    else:
+        try:
+            user = User.objects.get(username=username, is_active=True)
+        except User.DoesNotExist:
+            return Response(
+                {"message": _("Username does not exist or not verify yet")},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not user.check_password(password):
+            return Response(
+                {"message": _("Incorrect password")},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+    serializer = UserSerializer(user)
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+    if not session_id:
         login(request, user)
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
         return Response(
             {
                 "user": serializer.data,
                 "access_token": access_token,
                 "message": _("Login successful"),
-                "status": status.HTTP_200_OK,
-            }
+            },
+            status=status.HTTP_201_CREATED,
         )
     else:
         return Response(
-            {"message": _("Incorrect username or password")},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {
+                "user": serializer.data,
+                "access_token": access_token,
+                "message": _("Authenticated with session ID"),
+                "status": status.HTTP_200_OK,
+            }
         )
 
 
