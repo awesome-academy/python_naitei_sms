@@ -54,3 +54,7 @@ input[type="submit"] {
 .box-order {
   height: 500px !important;
 }
+.favorite-heart{
+  background-color: white;
+  border: none;
+}

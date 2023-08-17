@@ -1,10 +1,19 @@
+import re
 import pandas as pd
 from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.translation import gettext
 from django.views import generic
 from account.mail import send_mail_custom
-from pitch.models import Pitch, Order, Comment, PitchRating, AccessComment, Image
+from pitch.models import (
+    Pitch,
+    Order,
+    Comment,
+    PitchRating,
+    AccessComment,
+    Favorite,
+    Image,
+)
 from django.db.models import Count
 from pitch.forms import RentalPitchModelForm, CancelOrderModelForm
 import datetime
@@ -58,12 +67,18 @@ def pitch_detail(request, pk):
         raise Http404("Pitch does not exist")
     except PitchRating.DoesNotExist:
         pitch_rating = PitchRating.objects.create(pitch=pitch)
+
+    user_favorites = Favorite.objects.filter(renter=request.user, pitch=pitch)
+    is_favorite = user_favorites.exists()
+
+    context["user_favorites"] = user_favorites
+    context["is_favorite"] = is_favorite
+
     context["pitch"] = pitch
 
     context["pitch_rating"] = pitch_rating
 
     start_rental_date = datetime.datetime.now() + datetime.timedelta(days=1)
-
     context["images"] = context["pitch"].image.all()
 
     comments = Comment.objects.filter(pitch=pitch)
@@ -413,3 +428,43 @@ def upload_pitch_data(request):
             return HttpResponseRedirect(request.path_info)
 
     return render(request, "admin/upload_pitch_data.html")
+
+
+@login_required
+def toggle_favorite(request, pk):
+    try:
+        pitch = Pitch.objects.get(pk=pk)
+    except Pitch.DoesNotExist:
+        pass
+    try:
+        favorite = Favorite.objects.get(renter=request.user, pitch=pitch)
+        favorite.delete()
+    except Favorite.DoesNotExist:
+        favorite = Favorite.objects.create(renter=request.user, pitch=pitch)
+
+    return redirect("pitch-detail", pk=pk)
+
+
+def favorite_pitches(request):
+    favorite_pitches = Favorite.objects.filter(renter=request.user).select_related(
+        "pitch"
+    )
+
+    for favorite in favorite_pitches:
+        pitch = favorite.pitch
+        if pitch.image.all().exists():
+            pitch.banner = pitch.image.all()[0].image.url
+        else:
+            pitch.banner = "/media/uploads/default-image.jpg"
+        pitch.surface = pitch.get_label_grass()
+        pitch.size = pitch.get_label_size()
+    paginator = Paginator(favorite_pitches, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "is_paginated": True,
+        "favorite_pitches": favorite_pitches,
+    }
+    return render(request, "pitch/favorite_list.html", context=context)

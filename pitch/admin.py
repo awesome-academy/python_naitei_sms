@@ -1,6 +1,15 @@
 from django.contrib import admin, messages
 from django.http import HttpResponse
-from .models import Voucher, Pitch, Order, Comment, Image, PitchRating, AccessComment
+from .models import (
+    Voucher,
+    Pitch,
+    Order,
+    Comment,
+    Image,
+    PitchRating,
+    AccessComment,
+    Favorite,
+)
 from .models import Pitch
 from account.mail import send_mail_custom
 from django.utils.translation import gettext
@@ -17,6 +26,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.html import format_html
+
 
 class ImageInline(admin.TabularInline):
     model = Image
@@ -50,7 +60,9 @@ class PitchAdmin(admin.ModelAdmin):
             )
         else:
             super().delete_model(request, obj)
+
     change_list_template = "admin/custom_change_list_pitch.html"
+
 
 @admin.register(Voucher)
 class VoucherAdmin(admin.ModelAdmin):

@@ -1,0 +1,66 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% block content %}
+  <div class="container mt-5 pitch_lists m-5">
+    <h1 class="mb-4">{% trans "List Favorite Pitch" %}</h1>
+    {% if page_obj %}
+      <div class="row row-cols-1 row-cols-md-3 g-4 m-4">
+        {% for pitch in page_obj %}
+          <div class="col">
+            <div class="card-wrapper">
+              <div class="card h-100 ">
+                <img src="{{ pitch.pitch.banner }}"
+                     class="card-img-top"
+                     alt="Image"
+                     height="200"
+                     width="100">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <strong>{{ pitch.pitch.title }}</strong>
+                  </h5>
+                  <p class="card-text">{{ pitch.pitch.description }}</p>
+                </div>
+                <div class="row d-flex justify-content-center">
+                  <div class="col-5 pe-0">
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item">
+                        <strong>Address:</strong>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Rent cost:</strong>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Pitch size:</strong>
+                      </li>
+                      <li class="list-group-item">
+                        <strong>Pitch surface:</strong>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="col-7 ps-0">
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item">{{ pitch.pitch.address }}</li>
+                      <li class="list-group-item">{{ pitch.pitch.price }}</li>
+                      <li class="list-group-item">{{ pitch.pitch.size }}</li>
+                      <li class="list-group-item">{{ pitch.pitch.surface }}</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <a href="{{ pitch.pitch.get_absolute_url }}" class="card-link">{% trans "Detail" %}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no_result">
+        <p>THERE'S NO FAVORTIE PITCHES</p>
+        <span>There are no liked pitches . Go and get your favorite pitches .</span>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

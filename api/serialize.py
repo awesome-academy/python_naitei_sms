@@ -8,6 +8,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext as _
 
+from pitch.models import Favorite
+from rest_framework import serializers
+
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -36,3 +39,14 @@ class ChangePasswordSerializer(Serializer):
             )
 
         return data
+
+
+class FavoritePitchSerializer(ModelSerializer):
+    pitch_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Favorite
+        fields = ["pitch", "pitch_title"]
+
+    def get_pitch_title(self, favorite_instance):
+        return favorite_instance.pitch.title if favorite_instance.pitch else None
