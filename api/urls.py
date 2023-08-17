@@ -16,7 +16,8 @@ urlpatterns = [
     path(
         "toggle_favorite_pitch/<int:pitch_id>/",
         views.toggle_favorite_pitch,
-        name="toggle-favorite-pitch"),
+        name="toggle-favorite-pitch",
+    ),
     path(
         "user/change_info/<uuid:token>",
         views.VerifyChangeInfoView.as_view(),
@@ -26,5 +27,10 @@ urlpatterns = [
         "statistic/revenue/",
         views.RevenueStatisticView.as_view(),
         name="api-revenue-statistic",
+    ),
+    path(
+        "statistic/order_rate/",
+        views.OrderRateStatisticView.as_view(),
+        name="api-statistic-order-rate",
     ),
 ]
