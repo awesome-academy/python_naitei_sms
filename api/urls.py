@@ -33,4 +33,12 @@ urlpatterns = [
         views.OrderRateStatisticView.as_view(),
         name="api-statistic-order-rate",
     ),
+    path(
+        "comments/<int:comment_id>/reply/", views.create_reply_view, name="create-reply"
+    ),
+    path(
+        "pitches/<int:pitch_id>/comments/",
+        views.list_comments_pitch_view,
+        name="list-pitch-comments",
+    ),
 ]

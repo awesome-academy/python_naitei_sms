@@ -1,7 +1,6 @@
 import json
 import uuid
 from django.http import BadHeaderError
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from account.mail import send_mail_custom
@@ -14,9 +13,11 @@ from .serialize import (
     RevenueStatisticSerializer,
     UserSerializer,
     VerifyChangeInfoSerializer,
+    CommentSerializer,
+    NestedCommentSerializer,
 )
 from django.contrib.auth import login
-from rest_framework import status
+from rest_framework import status, permissions
 from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.urls import reverse
@@ -25,7 +26,7 @@ from rest_framework.generics import UpdateAPIView
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from .serialize import UserSerializer, FavoritePitchSerializer
-from pitch.models import Favorite, Pitch
+from pitch.models import Favorite, Pitch, User, Comment
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from django.db import IntegrityError, transaction, DatabaseError
@@ -37,7 +38,6 @@ from django.db.models import Q
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
 def users_login(request):
     session_id = request.COOKIES.get("sessionid")
     username = request.data.get("username")
@@ -235,10 +235,7 @@ class ChangeInfoView(APIView):
 
 class VerifyChangeInfoView(UpdateAPIView):
     serializer_class = VerifyChangeInfoSerializer
-
-    permission_classes = [
-        IsAuthenticated,
-    ]
+    authentication_classes = [SessionAuthentication]
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -470,3 +467,51 @@ class OrderRateStatisticView(APIView):
                 "message": "Order Rate Statistic!",
             }
         )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_reply_view(request, comment_id):
+    try:
+        parent_comment = Comment.objects.get(pk=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"error": "Parent comment not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    pitch_id = parent_comment.pitch_id
+    serializer = CommentSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(
+            renter=request.user, parent_id=parent_comment.id, pitch_id=pitch_id
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def list_comments_pitch_view(request, pitch_id):
+    max_comments = request.query_params.get("max_comments")
+    print(max_comments)
+    comments = Comment.objects.filter(pitch_id=pitch_id, parent=None).order_by(
+        "-created_date"
+    )
+
+    if max_comments:
+        try:
+            max_comments = int(max_comments)
+        except ValueError:
+            max_comments = None
+
+    if max_comments:
+        comments = comments[:max_comments]
+
+    serializer = NestedCommentSerializer(comments, many=True)
+
+    if max_comments:
+        message = f"Showing {len(comments)} comments out of {max_comments} requested."
+    else:
+        message = f"Showing all {len(comments)} comments."
+
+    response_data = {"message": message, "comments": serializer.data}
+
+    return Response(response_data, status=status.HTTP_200_OK)
