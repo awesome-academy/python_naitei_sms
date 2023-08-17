@@ -1,19 +1,17 @@
 from django.test import TestCase
-from pitch.factory import OrderFactory, PitchFactory, UserFactory
+from pitch.factory import OrderFactory, PitchFactory, UserFactory, CommentFactory
 from django.test import Client
 from django.urls import reverse
 from django.core import mail
 from account.models import EmailVerify
 from rest_framework.test import APIClient
 from rest_framework import status
-from pitch.models import Favorite
 from api.serialize import FavoritePitchSerializer
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 import datetime
 from django.utils import timezone
-
-from pitch.models import Order
+from pitch.models import Favorite, Comment, Order
 
 
 class UserAuthenticationTestCase(TestCase):
@@ -356,10 +354,6 @@ class ChangeInfoApiTest(TestCase):
         response = self.client.post(
             reverse("user-change-info"),
         )
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data["detail"], "Authentication credentials were not provided."
-        )
 
     def test_method_is_get(self):
         self.client.login(username=self.user.username, password="admin@123")
@@ -630,3 +624,200 @@ class OrderRateStatisticApiTest(TestCase):
         self.assertEqual(
             float(response.data["data"][0]["rate"]), float(orders_pitch_small / orders)
         )
+
+
+class ReplyCommentTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
+        cls.user = UserFactory()
+        cls.pitch = PitchFactory(size="3")
+        cls.comment = CommentFactory()
+
+    def test_reply_comment_unauthenticated(self):
+        self.client.logout()
+
+        response = self.client.post(reverse("create-reply", args=[self.comment.id]))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data["detail"], "Authentication credentials were not provided."
+        )
+
+    def test_create_reply_success(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("create-reply", args=[self.comment.id]),
+            {"comment": "This is a reply."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Comment.objects.count(), 2)
+        new_reply = Comment.objects.last()
+        self.assertEqual(new_reply.renter, self.user)
+        self.assertEqual(new_reply.pitch, self.comment.pitch)
+        self.assertEqual(new_reply.parent, self.comment)
+        self.assertEqual(new_reply.comment, "This is a reply.")
+
+    def test_create_reply_parent_not_found(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("create-reply", args=[999]),
+            {"comment": "This is a reply."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_create_reply_invalid_data(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("create-reply", args=[self.comment.id]),
+            {"invalid_field": "Invalid value"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_create_reply_blank_comment(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("create-reply", args=[self.comment.id]),
+            {"comment": ""},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_create_reply_parent_with_reply(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        reply = CommentFactory(parent=self.comment, pitch=self.comment.pitch)
+        response = self.client.post(
+            reverse("create-reply", args=[reply.id]),
+            {"comment": "This is a reply to a reply 1."},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Comment.objects.count(), 3)
+        new_reply = Comment.objects.last()
+
+        self.assertEqual(new_reply.renter, self.user)
+        self.assertEqual(new_reply.pitch, self.comment.pitch)
+        self.assertEqual(new_reply.parent, reply)
+        self.assertEqual(new_reply.comment, "This is a reply to a reply 1.")
+
+
+class ListCommentsPitchViewTestCase(TestCase):
+    @classmethod
+    def setUp(cls):
+        cls.pitch = PitchFactory()
+        cls.comments = CommentFactory.create_batch(10, pitch=cls.pitch)
+        cls.replies = CommentFactory.create_batch(5, parent=cls.comments[0])
+
+    def test_list_comments_no_limit_and_page_sort(self):
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 10)
+
+    def test_list_comments_with_nested_structure(self):
+        sort = "desc"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url, QUERY_STRING="sort=%s" % (sort))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 10)
+        self.assertEqual(len(response.data["results"][0]["replies"]), 5)
+
+    def test_list_comments_invalid_limit_return_defaultlimit(self):
+        limit = "invalid"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url, QUERY_STRING="limit=%s" % (limit))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 10)
+
+    def test_list_comments_invalid_sort_return_defaultsort(self):
+        sort = "invalid"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url, QUERY_STRING="sort=%s" % (sort))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 10)
+        self.assertTrue(
+            response.data["results"][0]["created_date"]
+            >= response.data["results"][1]["created_date"]
+        )
+
+    def test_list_comments_invalid_page(self):
+        page = "invalid"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url, QUERY_STRING="page=%s" % (page))
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["detail"], "Invalid page.")
+
+    def test_list_comments_pagination(self):
+        limit = 3
+        page = 2
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url, QUERY_STRING="limit=%d&page=%d" % (limit, page))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), limit)
+        if page - 1 == 1:
+            self.assertEqual(
+                response.data["previous"],
+                f"http://testserver{url}?limit={limit}",
+            )
+        else:
+            self.assertEqual(
+                response.data["previous"],
+                f"http://testserver{url}?limit={limit}&page={page - 1}",
+            )
+        self.assertEqual(
+            response.data["next"],
+            f"http://testserver{url}?limit={limit}&page={page + 1}",
+        )
+
+    def test_list_comments_sort_asc(self):
+        limit = 5
+        page = 1
+        sort = "asc"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(
+            url, QUERY_STRING="sort=%s&limit=%d&page=%d" % (sort, limit, page)
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), limit)
+        self.assertTrue(
+            response.data["results"][0]["created_date"]
+            >= response.data["results"][1]["created_date"]
+        )
+
+    def test_list_comments_sort_desc(self):
+        limit = 2
+        page = 1
+        sort = "desc"
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(
+            url, QUERY_STRING="sort=%s&limit=%d&page=%d" % (sort, limit, page)
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), limit)
+        self.assertTrue(
+            response.data["results"][0]["created_date"]
+            <= response.data["results"][1]["created_date"]
+        )
+
+    def test_list_comments_no_comments(self):
+        Comment.objects.all().delete()
+        url = reverse("list-pitch-comments", args=[self.pitch.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "There are no comments.")

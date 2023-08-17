@@ -2,7 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 from pitch.custom_fnc import convert_timedelta
-from pitch.models import Pitch, Order, Voucher
+from pitch.models import Pitch, Order, Voucher, Comment
 from django.utils import timezone
 import datetime
 
@@ -53,3 +53,13 @@ class VoucherFactory(DjangoModelFactory):
     min_cost = 2000000
     discount = 100000
     count = 100
+
+
+class CommentFactory(DjangoModelFactory):
+    class Meta:
+        model = Comment
+
+    renter = factory.SubFactory(UserFactory)
+    pitch = factory.SubFactory(PitchFactory)
+    rating = factory.Faker("pyint", min_value=1, max_value=5)
+    comment = factory.Faker("sentence", nb_words=20)
