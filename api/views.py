@@ -1,3 +1,4 @@
+import json
 import uuid
 from django.http import BadHeaderError
 from rest_framework.decorators import api_view
@@ -5,9 +6,11 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from account.mail import send_mail_custom
 from account.models import EmailVerify
+from pitch.models import Order, Pitch
 from project1.settings import HOST
 from .serialize import (
     ChangePasswordSerializer,
+    RevenueStatisticSerializer,
     UserSerializer,
     VerifyChangeInfoSerializer,
 )
@@ -22,12 +25,14 @@ from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from .serialize import UserSerializer, FavoritePitchSerializer
 from pitch.models import Favorite, Pitch
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from django.db import IntegrityError, transaction, DatabaseError
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from django.contrib.sessions.models import Session
+from django.db.models import Sum, Count
+from django.db.models import Q
 
 
 @api_view(["POST"])
@@ -251,6 +256,88 @@ class VerifyChangeInfoView(UpdateAPIView):
                         verify.user.last_name = serializer.data.get("last_name")
                     verify.user.save()
                     verify.delete()
+
+                    return Response(
+                        {
+                            "message": _("Update info success!"),
+                        }
+                    )
+
+            except Exception:
+                return Response(
+                    {
+                        "message": _("Something went wrong"),
+                        "status": "error",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        return Response(
+            {
+                "status": "error",
+                "errors": serializer.errors,
+                "message": _("Something went wrong."),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class ChangeInfoView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    def post(self, request):
+        user = request.user
+        try:
+            token = uuid.uuid4()
+            link = HOST + reverse("verify-change-info", kwargs={"token": token})
+            send_mail_custom(
+                _("Link to change info from Pitch App"),
+                [user.email],
+                None,
+                "email/change_info.html",
+                link=link,
+                username=user.username,
+            )
+            EmailVerify.objects.create(token=token, user=user, type="2")
+
+        except BadHeaderError:
+            return Response(
+                {"message": _("Email sending failed.")},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        return Response(
+            {
+                "message": _("Info change link has been sent to your email"),
+            }
+        )
+
+
+class VerifyChangeInfoView(UpdateAPIView):
+    serializer_class = VerifyChangeInfoSerializer
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            token = kwargs.pop("token")
+            verify = EmailVerify.objects.get(token=token)
+            try:
+                with transaction.atomic():
+                    if serializer.data.get("email"):
+                        verify.user.email = serializer.data.get("email")
+                    if serializer.data.get("first_name"):
+                        verify.user.first_name = serializer.data.get("first_name")
+                    if serializer.data.get("last_name"):
+                        verify.user.last_name = serializer.data.get("last_name")
+                    verify.user.save()
+                    verify.delete()
                     serializer = UserSerializer(verify.user)
 
                     return Response(
@@ -318,3 +405,35 @@ def toggle_favorite_pitch(request, pitch_id):
         {"message": f"You liked '{favorite.pitch.title}' pitch."},
         status=status.HTTP_200_OK,
     )
+
+
+class RevenueStatisticView(APIView):
+    permission_classes = [
+        IsAdminUser,
+    ]
+    serializer_class = RevenueStatisticSerializer
+
+    def get(self, request, *args, **kwargs):
+        params = request.GET.items()
+        params_list = list()
+        for param in params:
+            if param[1] != None and param[1] != "":
+                params_list.append(param)
+
+        query = dict((x, y) for x, y in params_list)
+
+        revenues = Pitch.objects.annotate(
+            revenue=Sum("order__cost", filter=Q(**query)),
+            count_order=Count("order", filter=Q(**query)),
+        )
+
+        serializer = RevenueStatisticSerializer(revenues, many=True)
+
+        return Response(
+            {
+                "status": "success",
+                "code": status.HTTP_200_OK,
+                "data": serializer.data,
+                "message": "Revenue Statistic!",
+            }
+        )

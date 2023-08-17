@@ -3,10 +3,14 @@ from rest_framework.serializers import (
     Serializer,
     CharField,
     ValidationError,
+    IntegerField,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext as _
+import pitch
+
+from pitch.models import Order, Pitch
 
 from pitch.models import Favorite
 from rest_framework import serializers
@@ -69,3 +73,12 @@ class VerifyChangeInfoSerializer(Serializer):
             )
 
         return data
+
+
+class RevenueStatisticSerializer(ModelSerializer):
+    revenue = IntegerField()
+    count_order = IntegerField()
+
+    class Meta:
+        model = Pitch
+        fields = ["id", "title", "revenue", "size", "surface", "price", "count_order"]
