@@ -1,9 +1,120 @@
 from django.test import TestCase
-from pitch.factory import UserFactory
+from pitch.factory import UserFactory, PitchFactory
 from django.test import Client
 from django.urls import reverse_lazy, reverse
 from django.core import mail
 from account.models import EmailVerify
+from rest_framework.test import APIClient
+from rest_framework import status
+from pitch.models import Favorite
+from api.serialize import FavoritePitchSerializer
+from django.contrib.sessions.models import Session
+
+
+class UserAuthenticationTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.client = Client()
+
+    def test_login_when_already_authenticated(self):
+        self.client.login(username=self.user.username, password="admin@123")
+
+        response = self.client.post(
+            reverse("users_login"),
+            data={"username": self.user.username, "password": "admin@123"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["message"], "You are already logged in.")
+
+    def test_login_with_session_id(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        session = Session.objects.get(session_key=self.client.session.session_key)
+        self.client.logout()
+        response = self.client.post(
+            reverse("users_login"),
+            {
+                "session_id": session.session_key,
+                "username": self.user.username,
+                "password": "admin@123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("user", response.data)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Login successful")
+
+        response = self.client.get(reverse("my-ordered"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_access_protected_url_with_invalid_session_id(self):
+        session_id = "invalid_session_id"
+        self.client.cookies["sessionid"] = session_id
+        response = self.client.get(reverse("my-ordered"))
+
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertIn("/accounts/login/", response.url)
+
+    def test_login_and_access_protected_url(self):
+        login_data = {"username": self.user.username, "password": "admin@123"}
+        response = self.client.post(reverse("users_login"), login_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("user", response.data)
+        self.assertIn("access_token", response.data)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Login successful")
+        response = self.client.get(reverse("my-ordered"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_login_without_session_id_and_empty_fields(self):
+        login_data = {"username": "", "password": ""}
+        response = self.client.post(reverse("users_login"), login_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Username is required")
+
+    def test_access_protected_url_without_login(self):
+        response = self.client.get(reverse("my-ordered"))
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertIn("/accounts/login/", response.url)
+
+    def test_user_not_exists(self):
+        login_data = {"username": "nonexistentuser", "password": "admin@123"}
+        response = self.client.post(reverse("users_login"), login_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("message", response.data)
+        self.assertEqual(
+            response.data["message"], "Username does not exist or not verify yet"
+        )
+
+    def test_invalid_credentials(self):
+        login_data = {"username": self.user.username, "password": "wrongpass"}
+        response = self.client.post(reverse("users_login"), login_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Incorrect password")
+
+    def test_user_not_active(self):
+        self.user.is_active = False
+        self.user.save()
+        login_data = {
+            "username": self.user.username,
+            "password": "admin@123",
+        }
+        response = self.client.post(reverse("users_login"), login_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("message", response.data)
+        self.assertEqual(
+            response.data["message"], "Username does not exist or not verify yet"
+        )
 
 
 class ChangePasswordApiTest(TestCase):
@@ -104,3 +215,100 @@ class ChangePasswordApiTest(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response2.status_code, 400)
+
+
+class ToggleFavoritePitchTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
+        cls.user = UserFactory()
+        cls.pitch = PitchFactory(size="3")
+
+    def test_toggle_favorite_authenticated(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("toggle-favorite-pitch", args=[self.pitch.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data["message"], f"You liked '{self.pitch.title}' pitch."
+        )
+
+        list_response = self.client.get(reverse("user_favorite_list"))
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(len(list_response.data["Your favorite pitch list: "]), 1)
+        self.assertEqual(
+            list_response.data["Your favorite pitch list: "][0]["pitch"], self.pitch.id
+        )
+
+        response = self.client.post(
+            reverse("toggle-favorite-pitch", args=[self.pitch.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data["message"], f"You unliked '{self.pitch.title}' pitch."
+        )
+
+        list_response = self.client.get(reverse("user_favorite_list"))
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(
+            list_response.data["message"], "There are no favorite pitches."
+        )
+
+    def test_toggle_favorite_unauthenticated(self):
+        self.client.logout()
+
+        response = self.client.post(
+            reverse("toggle-favorite-pitch", args=[self.pitch.id])
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data["detail"], "Authentication credentials were not provided."
+        )
+
+    def test_toggle_favorite_nonexistent_pitch(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("toggle-favorite-pitch", args=[999]))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Pitch not found.")
+
+
+class UserFavoriteListTestCase(TestCase):
+    def setUp(cls):
+        cls.client = APIClient()
+        cls.user = UserFactory()
+        cls.pitch = PitchFactory(size="3")
+
+    def test_user_favorite_list_unauthenticated(self):
+        response = self.client.get(reverse("user_favorite_list"))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_user_favorite_list_empty(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("user_favorite_list"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {"message": "There are no favorite pitches."},
+        )
+
+    def test_user_favorite_list_non_empty(self):
+        self.client.force_login(self.user)
+        favorite_pitch = Favorite.objects.create(renter=self.user, pitch=self.pitch)
+        response = self.client.get(reverse("user_favorite_list"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                "Your favorite pitch list: ": [
+                    FavoritePitchSerializer(favorite_pitch).data
+                ]
+            },
+        )
