@@ -4,6 +4,7 @@ from rest_framework.serializers import (
     CharField,
     ValidationError,
     IntegerField,
+    DecimalField,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -56,7 +57,8 @@ class FavoritePitchSerializer(ModelSerializer):
 
     def get_pitch_title(self, favorite_instance):
         return favorite_instance.pitch.title if favorite_instance.pitch else None
-    
+
+
 class VerifyChangeInfoSerializer(Serializer):
     first_name = CharField(required=False)
     last_name = CharField(required=False)
@@ -82,3 +84,14 @@ class RevenueStatisticSerializer(ModelSerializer):
     class Meta:
         model = Pitch
         fields = ["id", "title", "revenue", "size", "surface", "price", "count_order"]
+
+
+class OrderRateStatisticSerializer(ModelSerializer):
+    rate = DecimalField(
+        max_digits=2,
+        decimal_places=2,
+    )
+
+    class Meta:
+        model = Pitch
+        fields = ["id", "title", "rate", "size", "surface", "price"]

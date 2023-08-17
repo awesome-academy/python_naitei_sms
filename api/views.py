@@ -10,6 +10,7 @@ from pitch.models import Order, Pitch
 from project1.settings import HOST
 from .serialize import (
     ChangePasswordSerializer,
+    OrderRateStatisticSerializer,
     RevenueStatisticSerializer,
     UserSerializer,
     VerifyChangeInfoSerializer,
@@ -435,5 +436,37 @@ class RevenueStatisticView(APIView):
                 "code": status.HTTP_200_OK,
                 "data": serializer.data,
                 "message": "Revenue Statistic!",
+            }
+        )
+
+
+class OrderRateStatisticView(APIView):
+    permission_classes = [
+        IsAdminUser,
+    ]
+
+    def get(self, request, *args, **kwargs):
+        params = request.GET.items()
+        params_list = list()
+        for param in params:
+            if param[1] != None and param[1] != "":
+                params_list.append(param)
+
+        query = dict((x, y) for x, y in params_list)
+        total_orders = Order.objects.filter(status="c").count() * 1.00
+        print(total_orders)
+
+        rates = Pitch.objects.annotate(
+            rate=Count("order", filter=Q(order__status="c")) * 1.00 / total_orders
+        ).filter(**query)
+
+        serializer = OrderRateStatisticSerializer(rates, many=True)
+
+        return Response(
+            {
+                "status": "success",
+                "code": status.HTTP_200_OK,
+                "data": serializer.data,
+                "message": "Order Rate Statistic!",
             }
         )
