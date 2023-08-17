@@ -15,6 +15,10 @@ from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 from rest_framework.generics import UpdateAPIView
 from django.db import IntegrityError, transaction, DatabaseError
+from rest_framework.decorators import api_view, permission_classes
+from .serialize import UserSerializer, FavoritePitchSerializer
+from pitch.models import Favorite, Pitch
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(["POST"])
@@ -147,3 +151,44 @@ class ChangePasswordView(UpdateAPIView):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_favorite_list(request):
+    user = request.user
+    favorite_pitches = Favorite.objects.filter(renter=user)
+
+    if not favorite_pitches.exists():
+        return Response(
+            {"message": "There are no favorite pitches."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    serializer = FavoritePitchSerializer(favorite_pitches, many=True)
+    return Response({"Your favorite pitch list: ": serializer.data})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def toggle_favorite_pitch(request, pitch_id):
+    user = request.user
+    try:
+        pitch = Pitch.objects.get(pk=pitch_id)
+    except Pitch.DoesNotExist:
+        return Response(
+            {"message": "Pitch not found."}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    favorite, created = Favorite.objects.get_or_create(renter=user, pitch=pitch)
+
+    if not created:
+        favorite.delete()
+        return Response(
+            {"message": f"You unliked '{favorite.pitch.title}' pitch."},
+            status=status.HTTP_200_OK,
+        )
+    return Response(
+        {"message": f"You liked '{favorite.pitch.title}' pitch."},
+        status=status.HTTP_200_OK,
+    )

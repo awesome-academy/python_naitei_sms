@@ -16,6 +16,9 @@
         </li>
         {% if user.is_authenticated %}
           <li>
+            <a href="{% url 'favorite_pitches' %}">{% trans "Favorite Pitch" %}</a>
+          </li>
+          <li>
             <a href="{% url 'my-ordered' %}">{% trans "My Ordered" %}</a>
           </li>
         {% endif %}
@@ -44,9 +47,7 @@
         {% endif %}
       </ul>
     </nav>
-    <div class="box-select">
-      {% include "select_language.html" %}
-    </div>
+    <div class="box-select">{% include "select_language.html" %}</div>
   </div>
 </section>
 <script>

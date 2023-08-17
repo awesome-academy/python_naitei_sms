@@ -11,4 +11,10 @@ urlpatterns = [
         views.ChangePasswordView.as_view(),
         name="verify-change-password",
     ),
+    path("user_favorite_list/", views.user_favorite_list, name="user_favorite_list"),
+    path(
+        "toggle_favorite_pitch/<int:pitch_id>/",
+        views.toggle_favorite_pitch,
+        name="toggle-favorite-pitch",
+    ),
 ]

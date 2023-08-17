@@ -180,3 +180,7 @@ class CommentForm(forms.ModelForm):
 class FormCustomSearchAdminSite(Form):
     time_start = DateTimeField(required=False, widget=DateTimePickerInput())
     time_end = DateTimeField(required=False, widget=DateTimePickerInput())
+
+
+class FavoritePitchForm(forms.Form):
+    pass
