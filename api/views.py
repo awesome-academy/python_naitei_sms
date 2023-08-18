@@ -35,6 +35,7 @@ from rest_framework.decorators import api_view, authentication_classes
 from django.contrib.sessions.models import Session
 from django.db.models import Sum, Count
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
 
 
 @api_view(["POST"])
@@ -490,28 +491,25 @@ def create_reply_view(request, comment_id):
 
 @api_view(["GET"])
 def list_comments_pitch_view(request, pitch_id):
-    max_comments = request.query_params.get("max_comments")
-    print(max_comments)
+    sort = request.query_params.get("sort")
+    limit = request.query_params.get("limit")
+    page = request.query_params.get("page")
+
     comments = Comment.objects.filter(pitch_id=pitch_id, parent=None).order_by(
-        "-created_date"
+        "created_date" if sort == "desc" else "-created_date"
     )
 
-    if max_comments:
-        try:
-            max_comments = int(max_comments)
-        except ValueError:
-            max_comments = None
+    paginator = PageNumberPagination()
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 10
 
-    if max_comments:
-        comments = comments[:max_comments]
+    paginator.page_size = limit
+    paginator.page = page
 
-    serializer = NestedCommentSerializer(comments, many=True)
+    result_page = paginator.paginate_queryset(comments, request)
 
-    if max_comments:
-        message = f"Showing {len(comments)} comments out of {max_comments} requested."
-    else:
-        message = f"Showing all {len(comments)} comments."
+    serializer = NestedCommentSerializer(result_page, many=True)
 
-    response_data = {"message": message, "comments": serializer.data}
-
-    return Response(response_data, status=status.HTTP_200_OK)
+    return paginator.get_paginated_response(serializer.data)
