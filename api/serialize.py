@@ -13,7 +13,7 @@ import pitch
 
 from pitch.models import Order, Pitch
 
-from pitch.models import Favorite
+from pitch.models import Favorite, Comment
 from rest_framework import serializers
 
 
@@ -95,3 +95,32 @@ class OrderRateStatisticSerializer(ModelSerializer):
     class Meta:
         model = Pitch
         fields = ["id", "title", "rate", "size", "surface", "price"]
+
+
+class NestedCommentSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(source="renter", read_only=True)
+    created_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ["id", "comment", "user", "created_date", "replies"]
+
+    def get_replies(self, obj):
+        if obj.replies.exists():
+            serializer = NestedCommentSerializer(obj.replies.all(), many=True)
+            return serializer.data
+        return None
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    renter_id = serializers.IntegerField(source="renter.id", read_only=True)
+    parent_id = serializers.IntegerField(
+        source="parent.id", read_only=True, required=False
+    )
+    pitch_id = serializers.IntegerField(write_only=True, required=False)
+    replies = NestedCommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "comment", "renter_id", "parent_id", "replies", "pitch_id"]

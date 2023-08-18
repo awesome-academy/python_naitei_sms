@@ -127,6 +127,7 @@ class Comment(models.Model):
     )
     comment = models.CharField(max_length=500)
     created_date = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
 
     class Meta:
         db_table = "comments"
