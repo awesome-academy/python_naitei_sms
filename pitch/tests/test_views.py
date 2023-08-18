@@ -1,16 +1,16 @@
 from django.test import TestCase
 from django.test import Client
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 from pitch.factory import PitchFactory, UserFactory, OrderFactory
 from django.utils import timezone
 import datetime
 from django.core import mail
 from django.contrib.auth.models import User
 from account.models import EmailVerify
-from django.core.exceptions import ObjectDoesNotExist
 import uuid
-from pitch.models import Order, Comment, Pitch, AccessComment
+from pitch.models import Order, Comment, AccessComment
 from django.db import connections
+
 
 class HomeViewTest(TestCase):
     @classmethod
@@ -304,6 +304,7 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "registration/verify_email_fail.html")
 
+
 class CommentViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -313,7 +314,8 @@ class CommentViewTest(TestCase):
 
     def test_comment_creation_for_unauthenticated_user(self):
         response = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Comment by unauthenticated user",
@@ -326,7 +328,9 @@ class CommentViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(
             Comment.objects.filter(
-                pitch=self.pitch, renter=self.user, comment="Comment by unauthenticated user"
+                pitch=self.pitch,
+                renter=self.user,
+                comment="Comment by unauthenticated user",
             ).exists()
         )
 
@@ -334,7 +338,8 @@ class CommentViewTest(TestCase):
         AccessComment.objects.all().delete()
         self.client.login(username=self.user.username, password="admin@123")
         response = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Access Comment for user with no order",
@@ -358,7 +363,8 @@ class CommentViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         response = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Access Comment for user with order not confirmed",
@@ -368,7 +374,9 @@ class CommentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(
             Comment.objects.filter(
-                pitch=self.pitch, renter=self.user, comment="Access Comment for user with order not confirmed"
+                pitch=self.pitch,
+                renter=self.user,
+                comment="Access Comment for user with order not confirmed",
             ).exists()
         )
         self.assertTrue(
@@ -386,11 +394,12 @@ class CommentViewTest(TestCase):
             data={"time_start": start, "time_end": end},
         )
         self.assertEqual(response.status_code, 302)
-        order = Order.objects.get(renter = self.user, pitch = self.pitch)
+        order = Order.objects.get(renter=self.user, pitch=self.pitch)
         order.status = "c"
         order.save()
         response = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Access Comment for user with confirmed order",
@@ -405,15 +414,20 @@ class CommentViewTest(TestCase):
         )
         self.assertTrue(
             Comment.objects.filter(
-                pitch=self.pitch, renter=self.user, comment="Access Comment for user with confirmed order"
+                pitch=self.pitch,
+                renter=self.user,
+                comment="Access Comment for user with confirmed order",
             ).exists()
         )
 
     def test_comment_creation_for_user_with_confirmed_order_but_not_logged_in(self):
-        order = Order.objects.create(pitch=self.pitch, renter=self.user, status='c', cost = 100)
+        order = Order.objects.create(
+            pitch=self.pitch, renter=self.user, status="c", cost=100
+        )
         self.client.logout()
         response = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Comment for user with confirmed order (not logged in)",
@@ -423,7 +437,9 @@ class CommentViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(
             Comment.objects.filter(
-                pitch=self.pitch, renter=self.user, comment="Comment for user with confirmed order (not logged in)"
+                pitch=self.pitch,
+                renter=self.user,
+                comment="Comment for user with confirmed order (not logged in)",
             ).exists()
         )
 
@@ -436,12 +452,13 @@ class CommentViewTest(TestCase):
             data={"time_start": start, "time_end": end},
         )
         self.assertEqual(response.status_code, 302)
-        order = Order.objects.get(renter = self.user, pitch = self.pitch)
+        order = Order.objects.get(renter=self.user, pitch=self.pitch)
         order.status = "c"
         order.save()
         self.client.login(username="testuser", password="testpass")
         response1 = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Comment for user with confirmed order 1",
@@ -450,7 +467,8 @@ class CommentViewTest(TestCase):
         )
         self.assertEqual(response1.status_code, 302)
         response2 = self.client.post(
-            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})+ "?action=addcomment",
+            reverse("pitch-detail", kwargs={"pk": self.pitch.pk})
+            + "?action=addcomment",
             {
                 "submit_comment": True,
                 "comment": "Attempted second comment for user with confirmed order",
@@ -465,7 +483,9 @@ class CommentViewTest(TestCase):
         )
         self.assertFalse(
             Comment.objects.filter(
-                pitch=self.pitch, renter=self.user, comment="Attempted second comment for user with confirmed order"
+                pitch=self.pitch,
+                renter=self.user,
+                comment="Attempted second comment for user with confirmed order",
             ).exists()
         )
         self.assertEqual(Comment.objects.filter(renter=self.user).count(), 1)
