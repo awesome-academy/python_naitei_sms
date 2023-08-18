@@ -1,4 +1,3 @@
-import json
 import uuid
 from django.http import BadHeaderError
 from rest_framework.response import Response

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from pitch.factory import UserFactory, PitchFactory
 from django.test import Client
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 from django.core import mail
 from account.models import EmailVerify
 from rest_framework.test import APIClient
@@ -9,6 +9,7 @@ from rest_framework import status
 from pitch.models import Favorite
 from api.serialize import FavoritePitchSerializer
 from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
 
 
 class UserAuthenticationTestCase(TestCase):
@@ -128,14 +129,18 @@ class ChangePasswordApiTest(TestCase):
             reverse("user-change-password"),
             data={"username": self.user.username, "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.data["detail"].code, "method_not_allowed")
 
     def test_username_password_is_valid(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Password change link has been sent to your email"
+        )
         self.assertEqual(len(mail.outbox), 1)
         token = EmailVerify.objects.filter(user=self.user, type="1")
         response2 = self.client.put(
@@ -143,55 +148,70 @@ class ChangePasswordApiTest(TestCase):
             data={"password": "admin@123", "password_confirm": "admin@123"},
             content_type="application/json",
         )
-        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        self.assertEqual(response2.data["message"], "Password updated successfully")
 
     def test_username_and_email_is_none(self):
         response = self.client.post(
             reverse("user-change-password"),
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["message"], "Username is required")
 
     def test_username_does_not_exist(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": "username1234", "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["message"], "Username or Email is incorrect")
 
     def test_email_is_invalid(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": "admin@example.com"},
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["message"], "Username or Email is incorrect")
 
     def test_password_is_invalid(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": "admin@example.com"},
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["message"], "Username or Email is incorrect")
 
     def test_password_is_none(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Password change link has been sent to your email"
+        )
         self.assertEqual(len(mail.outbox), 1)
         token = EmailVerify.objects.filter(user=self.user, type="1")
         response2 = self.client.put(
             reverse("verify-change-password", kwargs={"token": token[0].token}),
             content_type="application/json",
         )
-        self.assertEqual(response2.status_code, 400)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response2.data["message"],
+            "The two password fields didn't match.",
+        )
 
     def test_password_not_match(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Password change link has been sent to your email"
+        )
         self.assertEqual(len(mail.outbox), 1)
         token = EmailVerify.objects.filter(user=self.user, type="1")
         response2 = self.client.put(
@@ -199,14 +219,21 @@ class ChangePasswordApiTest(TestCase):
             data={"password": "admin@123", "password_confirm": "admin@1234"},
             content_type="application/json",
         )
-        self.assertEqual(response2.status_code, 400)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response2.data["message"],
+            "The two password fields didn't match.",
+        )
 
     def test_weak_password(self):
         response = self.client.post(
             reverse("user-change-password"),
             data={"username": self.user.username, "email": self.user.email},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Password change link has been sent to your email"
+        )
         self.assertEqual(len(mail.outbox), 1)
         token = EmailVerify.objects.filter(user=self.user, type="1")
         response2 = self.client.put(
@@ -214,7 +241,8 @@ class ChangePasswordApiTest(TestCase):
             data={"password": "newpassword", "password_confirm": "newpassword"},
             content_type="application/json",
         )
-        self.assertEqual(response2.status_code, 400)
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIsNotNone(response2.data["errors"])
 
 
 class ToggleFavoritePitchTestCase(TestCase):
@@ -312,3 +340,115 @@ class UserFavoriteListTestCase(TestCase):
                 ]
             },
         )
+
+
+class ChangeInfoApiTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.client = Client()
+
+    def test_not_login(self):
+        response = self.client.post(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_method_is_get(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.get(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.data["detail"].code, "method_not_allowed")
+
+    def test_request_change_info_is_valid(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Info change link has been sent to your email"
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        token = EmailVerify.objects.filter(user=self.user, type="2")
+        response2 = self.client.put(
+            reverse("verify-change-info", kwargs={"token": token[0].token}),
+            data={
+                "email": "admin123@gmail.com",
+                "first_name": "admin",
+                "last_name": "user",
+            },
+            content_type="application/json",
+        )
+        user = User.objects.get(id=self.user.id)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        self.assertEqual(user.email, "admin123@gmail.com")
+        self.assertEqual(user.first_name, "admin")
+        self.assertEqual(user.last_name, "user")
+        self.assertEqual(response2.data["message"], "Update info success!")
+
+    def test_request_change_only_email(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Info change link has been sent to your email"
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        token = EmailVerify.objects.filter(user=self.user, type="2")
+        response2 = self.client.put(
+            reverse("verify-change-info", kwargs={"token": token[0].token}),
+            data={
+                "email": "admin123@gmail.com",
+            },
+            content_type="application/json",
+        )
+        user = User.objects.get(id=self.user.id)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        self.assertEqual(user.email, "admin123@gmail.com")
+        self.assertEqual(response2.data["message"], "Update info success!")
+
+    def test_change_info_body_is_none(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Info change link has been sent to your email"
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        token = EmailVerify.objects.filter(user=self.user, type="2")
+        response2 = self.client.put(
+            reverse("verify-change-info", kwargs={"token": token[0].token}),
+            content_type="application/json",
+        )
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response2.data["message"], "Something went wrong.")
+        self.assertIsNotNone(response2.data["errors"])
+
+    def test_email_is_valid(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.post(
+            reverse("user-change-info"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"], "Info change link has been sent to your email"
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        token = EmailVerify.objects.filter(user=self.user, type="2")
+        response2 = self.client.put(
+            reverse("verify-change-info", kwargs={"token": token[0].token}),
+            data={
+                "email": "admin123",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response2.data["message"], "Something went wrong.")
+        self.assertIsNotNone(response2.data["errors"])

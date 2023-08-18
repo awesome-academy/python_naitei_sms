@@ -5,6 +5,7 @@ from rest_framework.serializers import (
     ValidationError,
     IntegerField,
     DecimalField,
+    EmailField,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -62,7 +63,7 @@ class FavoritePitchSerializer(ModelSerializer):
 class VerifyChangeInfoSerializer(Serializer):
     first_name = CharField(required=False)
     last_name = CharField(required=False)
-    email = CharField(required=False)
+    email = EmailField(required=False)
 
     def validate(self, data):
         if (
