@@ -13,6 +13,8 @@ from django.contrib.auth.models import User
 import datetime
 from django.utils import timezone
 
+from pitch.models import Order
+
 
 class UserAuthenticationTestCase(TestCase):
     @classmethod
@@ -552,3 +554,79 @@ class RevenueStatisticApiTest(TestCase):
         self.assertEqual(response.data["message"], "Revenue Statistic!")
         self.assertEqual(len(response.data["data"]), 1)
         self.assertEqual(response.data["data"][0]["revenue"], 10)
+
+
+class OrderRateStatisticApiTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory(is_superuser=False, is_staff=False)
+        cls.admin = UserFactory(is_superuser=True)
+        cls.pitch_size_small = PitchFactory(size="1", price=1)
+        cls.pitch_size_normal = PitchFactory(size="2", price=1)
+        cls.orders = []
+        for i in range(0, 20):
+            cls.orders.append(
+                OrderFactory(
+                    renter=cls.user,
+                    pitch=cls.pitch_size_small if i < 10 else cls.pitch_size_normal,
+                    time_start=timezone.now() + datetime.timedelta(hours=i + 1)
+                    if i < 10
+                    else timezone.now()
+                    + datetime.timedelta(hours=i + 1)
+                    + datetime.timedelta(days=1),
+                    status="c",
+                )
+            )
+        cls.client = Client()
+
+    def test_not_login(self):
+        response = self.client.post(
+            reverse("api-statistic-order-rate"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.data["detail"], "Authentication credentials were not provided."
+        )
+
+    def test_login_is_user(self):
+        self.client.login(username=self.user.username, password="admin@123")
+        response = self.client.get(
+            reverse("api-statistic-order-rate"),
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            response.data["detail"],
+            "You do not have permission to perform this action.",
+        )
+
+    def test_login_is_admin(self):
+        self.client.login(username=self.admin.username, password="admin@123")
+        response = self.client.get(
+            reverse("api-statistic-order-rate"),
+        )
+        orders = Order.objects.filter(status="c").count() * 1.00
+        orders_pitch_small = (
+            Order.objects.filter(status="c", pitch=self.pitch_size_small).count() * 1.00
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Order Rate Statistic!")
+        self.assertEqual(len(response.data["data"]), 2)
+        self.assertEqual(
+            float(response.data["data"][0]["rate"]), float(orders_pitch_small / orders)
+        )
+
+    def test_filter_pitch_by_size(self):
+        self.client.login(username=self.admin.username, password="admin@123")
+        response = self.client.get(
+            reverse("api-statistic-order-rate"), QUERY_STRING="size=1"
+        )
+        orders = Order.objects.filter(status="c").count() * 1.00
+        orders_pitch_small = (
+            Order.objects.filter(status="c", pitch=self.pitch_size_small).count() * 1.00
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Order Rate Statistic!")
+        self.assertEqual(len(response.data["data"]), 1)
+        self.assertEqual(
+            float(response.data["data"][0]["rate"]), float(orders_pitch_small / orders)
+        )

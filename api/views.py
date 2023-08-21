@@ -461,12 +461,19 @@ class OrderRateStatisticView(APIView):
         params = request.GET.items()
         params_list = list()
         for param in params:
-            if param[1] != None and param[1] != "":
+            if (
+                param[1] != None
+                and param[1] != ""
+                and (
+                    param[0].startswith("size")
+                    or param[0].startswith("surface")
+                    or param[0].startswith("price")
+                )
+            ):
                 params_list.append(param)
 
         query = dict((x, y) for x, y in params_list)
         total_orders = Order.objects.filter(status="c").count() * 1.00
-        print(total_orders)
 
         rates = Pitch.objects.annotate(
             rate=Count("order", filter=Q(order__status="c")) * 1.00 / total_orders
