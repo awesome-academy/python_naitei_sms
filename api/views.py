@@ -44,6 +44,13 @@ def users_login(request):
     username = request.data.get("username")
     password = request.data.get("password")
 
+    user = request.user
+    if user.is_authenticated:
+        return Response(
+            {"message": _("You are already logged in.")},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     if not session_id and not username:
         return Response(
             {"message": _("Username is required")},
@@ -374,7 +381,7 @@ def user_favorite_list(request):
     if not favorite_pitches.exists():
         return Response(
             {"message": "There are no favorite pitches."},
-            status=status.HTTP_404_NOT_FOUND,
+            status=status.HTTP_200_OK,
         )
 
     serializer = FavoritePitchSerializer(favorite_pitches, many=True)
@@ -388,9 +395,7 @@ def toggle_favorite_pitch(request, pitch_id):
     try:
         pitch = Pitch.objects.get(pk=pitch_id)
     except Pitch.DoesNotExist:
-        return Response(
-            {"message": "Pitch not found."}, status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"message": "Pitch not found."}, status=status.HTTP_200_OK)
 
     favorite, created = Favorite.objects.get_or_create(renter=user, pitch=pitch)
 
