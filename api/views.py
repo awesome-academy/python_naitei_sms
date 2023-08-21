@@ -411,24 +411,34 @@ def toggle_favorite_pitch(request, pitch_id):
 
 
 class RevenueStatisticView(APIView):
+    serializer_class = RevenueStatisticSerializer
+
     permission_classes = [
         IsAdminUser,
     ]
-    serializer_class = RevenueStatisticSerializer
 
     def get(self, request, *args, **kwargs):
         params = request.GET.items()
         params_list = list()
+        param_pitch = list()
         for param in params:
             if param[1] != None and param[1] != "":
-                params_list.append(param)
+                if (
+                    param[0].startswith("size")
+                    or param[0].startswith("surface")
+                    or param[0].startswith("price")
+                ):
+                    param_pitch.append(param)
+                elif param[0].startswith("order"):
+                    params_list.append(param)
 
         query = dict((x, y) for x, y in params_list)
+        query_pitch = dict((x, y) for x, y in param_pitch)
 
         revenues = Pitch.objects.annotate(
             revenue=Sum("order__cost", filter=Q(**query)),
             count_order=Count("order", filter=Q(**query)),
-        )
+        ).filter(**query_pitch)
 
         serializer = RevenueStatisticSerializer(revenues, many=True)
 
