@@ -520,6 +520,11 @@ def list_comments_pitch_view(request, pitch_id):
         "created_date" if sort == "desc" else "-created_date"
     )
 
+    if not comments.exists():
+        return Response(
+            {"message": "There are no comments."},
+            status=status.HTTP_200_OK,
+        )
     paginator = PageNumberPagination()
     try:
         limit = int(limit)
